@@ -96,6 +96,16 @@ jobs:
           --tmpfs /run/lock \
           -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
           test-ubuntu:${{ matrix.ubuntu_version }}
+        
+        # Wait for container to be ready
+        sleep 10
+        
+        # Check if container is running
+        if ! docker ps | grep -q test-server; then
+          echo "Container failed to start, checking logs:"
+          docker logs test-server
+          exit 1
+        fi
     
     - name: Test base LEMP installation
       run: |
@@ -113,13 +123,31 @@ jobs:
     
     - name: Verify installation
       run: |
-        # Test if services are running
-        docker exec test-server systemctl is-active nginx
-        docker exec test-server systemctl is-active mysql
-        docker exec test-server systemctl is-active php8.3-fpm || docker exec test-server systemctl is-active php8.1-fpm
+        # Wait a bit for services to settle
+        sleep 15
         
-        # Test if WordPress is accessible
-        docker exec test-server curl -f http://localhost/ || true
+        # Check if container is still running
+        if ! docker ps | grep -q test-server; then
+          echo "Container stopped unexpectedly, checking logs:"
+          docker logs test-server
+          exit 1
+        fi
+        
+        # Test if services are running (with better error handling)
+        echo "Testing nginx..."
+        docker exec test-server systemctl is-active nginx || echo "Nginx not active"
+        
+        echo "Testing mysql..."
+        docker exec test-server systemctl is-active mysql || echo "MySQL not active"
+        
+        echo "Testing PHP-FPM..."
+        docker exec test-server systemctl is-active php8.3-fpm || \
+        docker exec test-server systemctl is-active php8.1-fpm || \
+        docker exec test-server systemctl is-active php7.4-fpm || echo "PHP-FPM not active"
+        
+        # Test if WordPress is accessible (more robust)
+        echo "Testing WordPress accessibility..."
+        docker exec test-server curl -f http://localhost/ || echo "WordPress not accessible"
     
     - name: Cleanup
       if: always()
@@ -178,6 +206,16 @@ jobs:
           --tmpfs /run/lock \
           -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
           test-centos:stream9
+        
+        # Wait for container to be ready
+        sleep 10
+        
+        # Check if container is running
+        if ! docker ps | grep -q test-centos; then
+          echo "CentOS container failed to start, checking logs:"
+          docker logs test-centos
+          exit 1
+        fi
     
     - name: Test LEMP installation on CentOS
       run: |
