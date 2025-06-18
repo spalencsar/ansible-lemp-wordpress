@@ -85,32 +85,39 @@ jobs:
             && rm -rf /var/lib/apt/lists/*
         RUN useradd -m -s /bin/bash testuser && \
             echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+        # Configure SSH
+        RUN mkdir /var/run/sshd
+        RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+        RUN echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
+        RUN echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
+        RUN ssh-keygen -A
+        EXPOSE 22
         # Start SSH service in foreground to keep container running
         CMD ["/usr/sbin/sshd", "-D"]
         EOF
     
     - name: Run test container
       run: |
-        # Configure SSH host keys
+        # Generate SSH key
         mkdir -p ~/.ssh
         ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
         
+        # Start container
         docker run -d --name test-server \
           -p 2222:22 \
           test-ubuntu:${{ matrix.ubuntu_version }}
         
-        # Wait for container to be ready
-        sleep 5
+        # Wait for SSH to be ready
+        sleep 10
         
-        # Configure SSH access
+        # Copy SSH key to container
         docker exec test-server mkdir -p /home/testuser/.ssh
         docker cp ~/.ssh/id_rsa.pub test-server:/home/testuser/.ssh/authorized_keys
         docker exec test-server chown -R testuser:testuser /home/testuser/.ssh
         docker exec test-server chmod 700 /home/testuser/.ssh
         docker exec test-server chmod 600 /home/testuser/.ssh/authorized_keys
-        docker exec test-server service ssh start
         
-        # Check if container is running
+        # Test if container is running
         if ! docker ps | grep -q test-server; then
           echo "Container failed to start, checking logs:"
           docker logs test-server
@@ -137,9 +144,27 @@ jobs:
     
     - name: Verify basic connectivity
       run: |
-        # Test basic SSH connectivity
-        echo "Testing SSH connectivity..."
-        ssh -o StrictHostKeyChecking=no -p 2222 testuser@localhost "echo 'SSH connection successful'"
+        # Wait for SSH to be fully ready
+        echo "Waiting for SSH service..."
+        sleep 5
+        
+        # Test SSH connectivity with retry
+        for i in {1..5}; do
+          echo "SSH connection attempt $i..."
+          if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -p 2222 testuser@localhost "echo 'SSH connection successful'"; then
+            echo "SSH connection established!"
+            break
+          else
+            echo "SSH connection failed, retrying in 3 seconds..."
+            sleep 3
+          fi
+          if [ $i -eq 5 ]; then
+            echo "SSH connection failed after 5 attempts"
+            echo "Container logs:"
+            docker logs test-server
+            exit 1
+          fi
+        done
         
         # Test basic container functionality
         echo "Testing container basics..."
