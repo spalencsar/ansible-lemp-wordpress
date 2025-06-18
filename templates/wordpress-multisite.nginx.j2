@@ -1,0 +1,123 @@
+{% if multisite_type == 'subdomain' %}
+# WordPress Multisite - Subdomain Configuration
+map $http_host $blogid {
+    default       -999;
+    
+    # Primary site
+    ~^{{ domain_name | regex_escape }}$                    0;
+    
+    # Subdomains
+    ~^([a-zA-Z0-9-]+)\.{{ domain_name | regex_escape }}$   -999;
+}
+{% endif %}
+
+server {
+    listen 80;
+    server_name {{ domain_name }}{% if multisite_type == 'subdomain' %} *.{{ domain_name }}{% endif %};
+    
+    {% if enable_ssl is defined and enable_ssl %}
+    # Redirect HTTP to HTTPS
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name {{ domain_name }}{% if multisite_type == 'subdomain' %} *.{{ domain_name }}{% endif %};
+    
+    # SSL Configuration
+    ssl_certificate {{ ssl_certificate_path }};
+    ssl_certificate_key {{ ssl_certificate_key_path }};
+    include /etc/nginx/snippets/ssl-params.conf;
+    {% endif %}
+    
+    root {{ wordpress_path }};
+    index index.php index.html index.htm;
+    
+    # WordPress Multisite specific rules
+    {% if multisite_type == 'subdirectory' %}
+    # Subdirectory multisite
+    if (!-e $request_filename) {
+        rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+        rewrite ^/[_0-9a-zA-Z-]+(/wp-.*) $1 last;
+        rewrite ^/[_0-9a-zA-Z-]+(/.*\.php)$ $1 last;
+    }
+    {% endif %}
+    
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+    
+    # WordPress uploads for multisite
+    {% if multisite_type == 'subdirectory' %}
+    location ~ ^/[_0-9a-zA-Z-]+/files/(.+) {
+        try_files /wp-content/blogs.dir/$blogid/files/$1 /wp-includes/ms-files.php?file=$1;
+        access_log off; log_not_found off; expires max;
+    }
+    {% endif %}
+    
+    # Handle uploads for subdomain multisite
+    {% if multisite_type == 'subdomain' %}
+    location ~ ^/files/(.+) {
+        try_files /wp-content/blogs.dir/$blogid/files/$1 /wp-includes/ms-files.php?file=$1;
+        access_log off; log_not_found off; expires max;
+    }
+    {% endif %}
+    
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:{{ php_fpm_socket }};
+        {% if enable_ssl is defined and enable_ssl %}
+        fastcgi_param HTTPS on;
+        {% endif %}
+        
+        # WordPress multisite environment variables
+        fastcgi_param WP_MULTISITE 1;
+        {% if multisite_type == 'subdomain' %}
+        fastcgi_param SUBDOMAIN_INSTALL 1;
+        {% else %}
+        fastcgi_param SUBDOMAIN_INSTALL 0;
+        {% endif %}
+    }
+    
+    # WordPress security rules
+    location ~* ^/(wp-config\.php|wp-config-sample\.php|readme\.html|license\.txt)$ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    location ~ /\.ht {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    # WordPress uploads security
+    location ~* /(?:uploads|files)/.*\.php$ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    # Static files caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+    
+    # WordPress REST API protection
+    location ~ ^/wp-json/ {
+        # Rate limiting for API
+        limit_req zone=api burst=10 nodelay;
+        
+        try_files $uri $uri/ /index.php?$args;
+    }
+    
+    # Block xmlrpc.php
+    location = /xmlrpc.php {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+}

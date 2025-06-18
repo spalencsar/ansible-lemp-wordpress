@@ -1,0 +1,76 @@
+name: 📚 Documentation Issue
+description: Report an issue with documentation
+title: "[DOCS] "
+labels: ["documentation", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation!
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: Which documentation needs attention?
+      options:
+        - README.md
+        - Setup/Installation Guide
+        - Production Deployment Guide
+        - SSL Setup Guide
+        - Troubleshooting Guide
+        - Contributing Guidelines
+        - API/Variable Documentation
+        - Code Comments
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Missing Information
+        - Incorrect Information
+        - Outdated Information
+        - Unclear Instructions
+        - Typo/Grammar
+        - Missing Examples
+        - Broken Links
+        - Formatting Issues
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content
+      description: What does the current documentation say? (copy/paste relevant section)
+      render: markdown
+
+  - type: textarea
+    id: expected-content
+    attributes:
+      label: Expected Content
+      description: What should the documentation say instead?
+      render: markdown
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: "File path and line number (e.g., docs/ssl-setup.md:45)"
+      placeholder: "docs/production-deployment.md:120"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that might be helpful

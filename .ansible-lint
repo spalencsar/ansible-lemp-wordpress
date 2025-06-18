@@ -1,0 +1,50 @@
+# Ansible-lint configuration
+# https://ansible-lint.readthedocs.io/en/latest/configuring.html
+
+# Exclude paths from linting
+exclude_paths:
+  - .cache/
+  - .github/
+  - docker/
+  - tests/
+  - '*.md'
+
+# Enable specific rules
+enable_list:
+  - yaml
+  - no-changed-when
+  - no-tabs
+
+# Skip specific rules
+skip_list:
+  - role-name  # We don't use role naming conventions
+  - galaxy     # We don't publish to Galaxy
+  - meta-no-info  # No meta/main.yml files
+
+# Configure specific rules
+rules:
+  line-length:
+    max: 120
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+  braces:
+    max-spaces-inside: 1
+    max-spaces-inside-empty: 0
+  brackets:
+    max-spaces-inside: 1
+    max-spaces-inside-empty: 0
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  comments:
+    min-spaces-from-content: 1
+
+# Use specific Ansible version for linting
+supported_ansible_versions:
+  - ">=6.0"
+
+# Offline mode (don't check for newer ansible-lint versions)
+offline: false
+
+# Verbosity level
+verbosity: 1

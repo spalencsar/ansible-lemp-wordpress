@@ -1,0 +1,26 @@
+[wordpress]
+enabled = true
+port = http,https
+filter = wordpress
+logpath = {{ log_dir }}/nginx/*access*.log
+maxretry = 3
+bantime = 3600
+findtime = 600
+
+[wordpress-auth]
+enabled = true
+port = http,https
+filter = wordpress-auth
+logpath = {{ log_dir }}/nginx/*access*.log
+maxretry = 5
+bantime = 1800
+findtime = 600
+
+[wordpress-xmlrpc]
+enabled = true
+port = http,https
+filter = wordpress-xmlrpc
+logpath = {{ log_dir }}/nginx/*access*.log
+maxretry = 3
+bantime = 3600
+findtime = 600

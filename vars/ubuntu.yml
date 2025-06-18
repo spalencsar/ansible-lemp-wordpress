@@ -1,0 +1,39 @@
+# Ubuntu-specific variables
+---
+# Package names for Ubuntu
+packages:
+  - nginx
+  - mysql-server
+  - php8.3-fpm
+  - php8.3-mysql
+  - php8.3-curl
+  - php8.3-gd
+  - php8.3-intl
+  - php8.3-mbstring
+  - php8.3-soap
+  - php8.3-xml
+  - php8.3-xmlrpc
+  - php8.3-zip
+  - python3-pymysql
+  - unzip
+
+# Service names
+mysql_service: mysql
+nginx_service: nginx
+php_fpm_service: php8.3-fpm
+
+# Package manager
+package_manager: apt
+
+# PHP paths
+php_fpm_config_path: /etc/php/8.3/fpm
+php_cli_config_path: /etc/php/8.3/cli
+php_fpm_pool_path: /etc/php/8.3/fpm/pool.d
+
+# Nginx paths
+nginx_config_path: /etc/nginx
+nginx_sites_available: /etc/nginx/sites-available
+nginx_sites_enabled: /etc/nginx/sites-enabled
+
+# MySQL paths
+mysql_config_path: /etc/mysql

@@ -1,0 +1,67 @@
+# FastCGI Cache configuration for WordPress
+# Include this in your WordPress server block
+
+# Cache zones
+set $skip_cache 0;
+
+# POST requests and urls with a query string should always go to PHP
+if ($request_method = POST) {
+    set $skip_cache 1;
+}
+
+if ($query_string != "") {
+    set $skip_cache 1;
+}
+
+# Don't cache uris containing the following segments
+if ($request_uri ~* "/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml") {
+    set $skip_cache 1;
+}
+
+# Don't use the cache for logged in users or recent commenters
+if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in") {
+    set $skip_cache 1;
+}
+
+# Cache configuration
+location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:{{ php_fpm_socket }};
+    
+    {% if nginx_fastcgi_cache_enabled | default(true) %}
+    # FastCGI cache settings
+    fastcgi_cache wordpress;
+    fastcgi_cache_valid 200 301 302 {{ nginx_cache_valid_time | default('60m') }};
+    fastcgi_cache_valid 404 {{ nginx_cache_404_time | default('1m') }};
+    fastcgi_cache_bypass $skip_cache;
+    fastcgi_no_cache $skip_cache;
+    fastcgi_cache_lock on;
+    fastcgi_cache_lock_timeout 5s;
+    fastcgi_cache_revalidate on;
+    fastcgi_cache_background_update on;
+    
+    # Cache headers
+    add_header X-FastCGI-Cache $upstream_cache_status;
+    {% endif %}
+    
+    # Security headers
+    {% if enable_ssl is defined and enable_ssl %}
+    fastcgi_param HTTPS on;
+    {% endif %}
+    
+    # Performance parameters
+    fastcgi_buffer_size {{ nginx_fastcgi_buffer_size | default('128k') }};
+    fastcgi_buffers {{ nginx_fastcgi_buffers | default('4 256k') }};
+    fastcgi_busy_buffers_size {{ nginx_fastcgi_busy_buffers_size | default('256k') }};
+    fastcgi_temp_file_write_size {{ nginx_fastcgi_temp_file_write_size | default('256k') }};
+    fastcgi_read_timeout {{ nginx_fastcgi_read_timeout | default('300') }};
+    fastcgi_connect_timeout {{ nginx_fastcgi_connect_timeout | default('60') }};
+    fastcgi_send_timeout {{ nginx_fastcgi_send_timeout | default('180') }};
+}
+
+# Cache purge endpoint (for logged in users)
+location ~ /purge(/.*) {
+    allow 127.0.0.1;
+    deny all;
+    fastcgi_cache_purge wordpress "$scheme$request_method$host$1";
+}

@@ -1,0 +1,39 @@
+
+
+services:
+  ubuntu-test:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: ansible-ubuntu-test
+    hostname: ubuntu-test
+    ports:
+      - "2222:22"
+      - "8080:80"
+    volumes:
+      - ./test-data:/opt/test-data:rw
+      - ./html:/var/www/html:rw
+    environment:
+      - TZ=Europe/Berlin
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "service", "ssh", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ansible-net
+    security_opt:
+      - seccomp:unconfined
+    tmpfs:
+      - /tmp:noexec,nosuid,size=500m
+
+networks:
+  ansible-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: ansible-br1
+    ipam:
+      config:
+        - subnet: 172.25.0.0/24

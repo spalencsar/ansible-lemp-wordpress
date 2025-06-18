@@ -1,0 +1,313 @@
+---
+# Advanced WordPress features and optimizations
+- name: WordPress Advanced Features Setup
+  hosts: all
+  become: yes
+  vars_files:
+    - "../vars/{{ ansible_os_family | lower }}.yml"
+  
+  vars:
+    # Backup Configuration
+    enable_backups: "{{ enable_backups | default(true) }}"
+    backup_schedule: "{{ backup_schedule | default('0 2 * * *') }}"  # Daily at 2 AM
+    backup_retention_days: "{{ backup_retention_days | default(7) }}"
+    backup_destination: "{{ backup_destination | default('/var/backups/wordpress') }}"
+    
+    # Performance Configuration
+    enable_redis: "{{ enable_redis | default(false) }}"
+    enable_memcached: "{{ enable_memcached | default(false) }}"
+    enable_opcache: "{{ enable_opcache | default(true) }}"
+    
+    # Security Configuration
+    enable_fail2ban: "{{ enable_fail2ban | default(true) }}"
+    enable_modsecurity: "{{ enable_modsecurity | default(false) }}"
+    
+    # Monitoring Configuration
+    enable_monitoring: "{{ enable_monitoring | default(false) }}"
+    
+    # WordPress Multisite
+    enable_multisite: "{{ enable_multisite | default(false) }}"
+    multisite_type: "{{ multisite_type | default('subdirectory') }}"  # subdirectory or subdomain
+
+  tasks:
+    # Backup System
+    - name: Install backup dependencies
+      package:
+        name:
+          - rsync
+          - gzip
+          - tar
+        state: present
+      when: enable_backups
+      tags: backup
+
+    - name: Create backup directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ backup_destination }}"
+        - "{{ backup_destination }}/database"
+        - "{{ backup_destination }}/files"
+      when: enable_backups
+      tags: backup
+
+    - name: Create backup script
+      template:
+        src: ../templates/wordpress-backup.sh.j2
+        dest: /usr/local/bin/wordpress-backup.sh
+        mode: '0755'
+      when: enable_backups
+      tags: backup
+
+    - name: Schedule WordPress backups
+      cron:
+        name: "WordPress Backup"
+        minute: "{{ backup_schedule.split()[0] }}"
+        hour: "{{ backup_schedule.split()[1] }}"
+        day: "{{ backup_schedule.split()[2] }}"
+        month: "{{ backup_schedule.split()[3] }}"
+        weekday: "{{ backup_schedule.split()[4] }}"
+        job: "/usr/local/bin/wordpress-backup.sh"
+      when: enable_backups
+      tags: backup
+
+    # Redis Cache
+    - name: Install Redis
+      package:
+        name: redis-server
+        state: present
+      when: enable_redis
+      tags: redis
+
+    - name: Configure Redis
+      template:
+        src: ../templates/redis.conf.j2
+        dest: /etc/redis/redis.conf
+        backup: yes
+      when: enable_redis
+      notify: restart redis
+      tags: redis
+
+    - name: Start and enable Redis
+      service:
+        name: redis-server
+        state: started
+        enabled: yes
+      when: enable_redis
+      tags: redis
+
+    - name: Install Redis PHP extension
+      package:
+        name: "php{{ php_version }}-redis"
+        state: present
+      when: enable_redis and ansible_os_family == "Debian"
+      notify: restart php-fpm
+      tags: redis
+
+    # Memcached
+    - name: Install Memcached
+      package:
+        name:
+          - memcached
+          - "php{{ php_version }}-memcached"
+        state: present
+      when: enable_memcached and ansible_os_family == "Debian"
+      tags: memcached
+
+    - name: Configure Memcached
+      template:
+        src: ../templates/memcached.conf.j2
+        dest: /etc/memcached.conf
+        backup: yes
+      when: enable_memcached
+      notify: restart memcached
+      tags: memcached
+
+    - name: Start and enable Memcached
+      service:
+        name: memcached
+        state: started
+        enabled: yes
+      when: enable_memcached
+      tags: memcached
+
+    # PHP OPcache Optimization
+    - name: Configure PHP OPcache
+      blockinfile:
+        path: "{{ php_ini_path }}"
+        marker: "; {mark} ANSIBLE MANAGED BLOCK - OPcache"
+        block: |
+          ; OPcache Configuration
+          opcache.enable=1
+          opcache.memory_consumption=256
+          opcache.interned_strings_buffer=16
+          opcache.max_accelerated_files=10000
+          opcache.revalidate_freq=2
+          opcache.save_comments=1
+          opcache.enable_file_override=1
+      when: enable_opcache
+      notify: restart php-fpm
+      tags: opcache
+
+    # Fail2Ban Security
+    - name: Install Fail2Ban
+      package:
+        name: fail2ban
+        state: present
+      when: enable_fail2ban
+      tags: fail2ban
+
+    - name: Configure Fail2Ban for WordPress
+      template:
+        src: ../templates/fail2ban-wordpress.conf.j2
+        dest: /etc/fail2ban/jail.d/wordpress.conf
+      when: enable_fail2ban
+      notify: restart fail2ban
+      tags: fail2ban
+
+    - name: Start and enable Fail2Ban
+      service:
+        name: fail2ban
+        state: started
+        enabled: yes
+      when: enable_fail2ban
+      tags: fail2ban
+
+    # WordPress Plugins for Performance
+    - name: Install WordPress performance plugins
+      command: >
+        wp plugin install {{ item }} --activate --allow-root
+      args:
+        chdir: "{{ wordpress_path }}"
+      loop:
+        - w3-total-cache
+        - wp-optimize
+        - wordfence
+      when: enable_monitoring
+      become_user: "{{ nginx_user }}"
+      tags: wordpress-plugins
+
+    # WordPress Multisite Setup
+    - name: Configure WordPress Multisite
+      blockinfile:
+        path: "{{ wordpress_path }}/wp-config.php"
+        marker: "/* {mark} ANSIBLE MANAGED BLOCK - Multisite */"
+        insertbefore: "/* That's all, stop editing!"
+        block: |
+          /* Multisite Configuration */
+          define('WP_ALLOW_MULTISITE', true);
+          define('MULTISITE', true);
+          define('SUBDOMAIN_INSTALL', {{ 'true' if multisite_type == 'subdomain' else 'false' }});
+          define('DOMAIN_CURRENT_SITE', '{{ domain_name | default(ansible_default_ipv4.address) }}');
+          define('PATH_CURRENT_SITE', '/');
+          define('SITE_ID_CURRENT_SITE', 1);
+          define('BLOG_ID_CURRENT_SITE', 1);
+      when: enable_multisite
+      tags: multisite
+
+    - name: Configure Nginx for WordPress Multisite
+      template:
+        src: ../templates/wordpress-multisite.nginx.j2
+        dest: "{{ nginx_sites_available }}/wordpress"
+        backup: yes
+      when: enable_multisite and ansible_os_family == "Debian"
+      notify: restart nginx
+      tags: multisite
+
+    # SSL Certificate Auto-renewal with notifications
+    - name: Create SSL renewal notification script
+      template:
+        src: ../templates/ssl-renewal-notify.sh.j2
+        dest: /usr/local/bin/ssl-renewal-notify.sh
+        mode: '0755'
+      when: enable_ssl is defined and enable_ssl
+      tags: ssl
+
+    - name: Schedule SSL renewal with notifications
+      cron:
+        name: "Renew SSL certificates with notification"
+        minute: "0"
+        hour: "12"
+        job: "/usr/local/bin/ssl-renewal-notify.sh"
+      when: enable_ssl is defined and enable_ssl
+      tags: ssl
+
+    # System Monitoring
+    - name: Install monitoring tools
+      package:
+        name:
+          - htop
+          - iotop
+          - nethogs
+          - glances
+        state: present
+      when: enable_monitoring
+      tags: monitoring
+
+    - name: Install Netdata monitoring
+      shell: |
+        bash <(curl -Ss https://my-netdata.io/kickstart.sh) --dont-wait --stable-channel
+      args:
+        creates: /usr/sbin/netdata
+      when: enable_monitoring
+      tags: monitoring
+
+    # WordPress CLI improvements
+    - name: Create WP-CLI config
+      template:
+        src: ../templates/wp-cli.yml.j2
+        dest: "{{ wordpress_path }}/wp-cli.yml"
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_user }}"
+      tags: wp-cli
+
+    # Database optimization
+    - name: Configure MySQL for WordPress optimization
+      blockinfile:
+        path: "{{ mysql_conf_file }}"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - WordPress Optimization"
+        block: |
+          # WordPress Optimization
+          innodb_buffer_pool_size = 256M
+          innodb_log_file_size = 64M
+          query_cache_type = 1
+          query_cache_size = 32M
+          max_connections = 200
+          thread_cache_size = 8
+          tmp_table_size = 32M
+          max_heap_table_size = 32M
+      notify: restart mysql
+      tags: mysql-optimization
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: "{{ nginx_service }}"
+        state: restarted
+
+    - name: restart php-fpm
+      service:
+        name: "{{ php_fpm_service }}"
+        state: restarted
+
+    - name: restart mysql
+      service:
+        name: "{{ mysql_service }}"
+        state: restarted
+
+    - name: restart redis
+      service:
+        name: redis-server
+        state: restarted
+
+    - name: restart memcached
+      service:
+        name: memcached
+        state: restarted
+
+    - name: restart fail2ban
+      service:
+        name: fail2ban
+        state: restarted

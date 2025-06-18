@@ -1,0 +1,289 @@
+---
+# Ultimate WordPress Performance Optimization Playbook
+- name: Ultimate WordPress Performance Optimization
+  hosts: all
+  become: yes
+  vars_files:
+    - "../vars/{{ ansible_os_family | lower }}.yml"
+  
+  vars:
+    # Performance Configuration
+    enable_performance_monitoring: "{{ enable_performance_monitoring | default(true) }}"
+    enable_system_optimization: "{{ enable_system_optimization | default(true) }}"
+    enable_nginx_optimization: "{{ enable_nginx_optimization | default(true) }}"
+    enable_php_optimization: "{{ enable_php_optimization | default(true) }}"
+    enable_mysql_optimization: "{{ enable_mysql_optimization | default(true) }}"
+    
+    # Nginx Performance Settings
+    nginx_worker_processes: "{{ ansible_processor_vcpus }}"
+    nginx_worker_connections: "{{ (ansible_memtotal_mb / 4) | int }}"
+    nginx_fastcgi_cache_enabled: true
+    nginx_fastcgi_cache_size: "{{ (ansible_memtotal_mb / 10) | int }}m"
+    
+    # PHP Performance Settings
+    php_memory_limit: "{{ (ansible_memtotal_mb / 4) | int }}M"
+    php_max_execution_time: 300
+    php_max_input_vars: 3000
+    
+    # MySQL Performance Settings
+    innodb_buffer_pool_size: "{{ (ansible_memtotal_mb / 2) | int }}M"
+    max_connections: "{{ (ansible_memtotal_mb / 10) | int }}"
+
+  tasks:
+    # System Optimizations
+    - name: Apply system performance optimizations
+      template:
+        src: ../templates/sysctl.conf.j2
+        dest: /etc/sysctl.d/99-wordpress-performance.conf
+        backup: yes
+      when: enable_system_optimization
+      notify: reload sysctl
+      tags: system-optimization
+
+    - name: Set system limits for web services
+      blockinfile:
+        path: /etc/security/limits.conf
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - WordPress Performance"
+        block: |
+          # Limits for web services
+          www-data soft nofile 65536
+          www-data hard nofile 65536
+          mysql soft nofile 65536
+          mysql hard nofile 65536
+          redis soft nofile 65536
+          redis hard nofile 65536
+      when: enable_system_optimization
+      tags: system-optimization
+
+    # Nginx Performance Optimization
+    - name: Optimize Nginx main configuration
+      template:
+        src: ../templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        backup: yes
+      when: enable_nginx_optimization
+      notify: restart nginx
+      tags: nginx-optimization
+
+    - name: Create FastCGI cache directory
+      file:
+        path: /var/cache/nginx
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+      when: nginx_fastcgi_cache_enabled
+      tags: nginx-optimization
+
+    - name: Configure Nginx FastCGI cache
+      copy:
+        content: |
+          # FastCGI cache configuration
+          include /etc/nginx/conf.d/fastcgi-cache.conf;
+        dest: /etc/nginx/conf.d/fastcgi-cache-include.conf
+      when: nginx_fastcgi_cache_enabled
+      notify: restart nginx
+      tags: nginx-optimization
+
+    - name: Create FastCGI cache configuration
+      template:
+        src: ../templates/fastcgi-cache.conf.j2
+        dest: /etc/nginx/conf.d/fastcgi-cache.conf
+      when: nginx_fastcgi_cache_enabled
+      notify: restart nginx
+      tags: nginx-optimization
+
+    # PHP Performance Optimization
+    - name: Optimize PHP configuration
+      template:
+        src: ../templates/php.ini.j2
+        dest: "{{ php_ini_path }}"
+        backup: yes
+      when: enable_php_optimization
+      notify: restart php-fpm
+      tags: php-optimization
+
+    - name: Optimize PHP-FPM pool configuration
+      template:
+        src: ../templates/www.conf.j2
+        dest: "{{ php_fpm_pool_dir }}/www.conf"
+        backup: yes
+      when: enable_php_optimization
+      notify: restart php-fpm
+      tags: php-optimization
+
+    # MySQL Performance Optimization
+    - name: Optimize MySQL configuration
+      template:
+        src: ../templates/my.cnf.j2
+        dest: "{{ mysql_conf_file }}"
+        backup: yes
+      when: enable_mysql_optimization
+      notify: restart mysql
+      tags: mysql-optimization
+
+    # Redis Performance (if enabled)
+    - name: Optimize Redis configuration
+      template:
+        src: ../templates/redis.conf.j2
+        dest: /etc/redis/redis.conf
+        backup: yes
+      when: enable_redis is defined and enable_redis
+      notify: restart redis
+      tags: redis-optimization
+
+    # WordPress Cron Optimization
+    - name: Create optimized WordPress cron script
+      template:
+        src: ../templates/wordpress-cron.sh.j2
+        dest: /usr/local/bin/wordpress-cron.sh
+        mode: '0755'
+      tags: wordpress-optimization
+
+    - name: Disable default WordPress cron and use system cron
+      cron:
+        name: "WordPress Cron"
+        minute: "*/5"
+        job: "/usr/local/bin/wordpress-cron.sh"
+        user: root
+      tags: wordpress-optimization
+
+    - name: Install Redis Object Cache plugin (if Redis enabled)
+      command: >
+        wp plugin install redis-cache --activate --allow-root
+      args:
+        chdir: "{{ wordpress_path }}"
+      when: enable_redis is defined and enable_redis
+      become_user: "{{ nginx_user }}"
+      tags: wordpress-optimization
+
+    - name: Enable Redis Object Cache
+      command: >
+        wp redis enable --allow-root
+      args:
+        chdir: "{{ wordpress_path }}"
+      when: enable_redis is defined and enable_redis
+      become_user: "{{ nginx_user }}"
+      ignore_errors: yes
+      tags: wordpress-optimization
+
+    # Performance Monitoring
+    - name: Install performance monitoring script
+      template:
+        src: ../templates/performance-monitor.sh.j2
+        dest: /usr/local/bin/wordpress-performance-monitor.sh
+        mode: '0755'
+      when: enable_performance_monitoring
+      tags: monitoring
+
+    - name: Schedule performance monitoring
+      cron:
+        name: "WordPress Performance Monitoring"
+        minute: "*/15"
+        job: "/usr/local/bin/wordpress-performance-monitor.sh"
+        user: root
+      when: enable_performance_monitoring
+      tags: monitoring
+
+    # Log Management
+    - name: Configure logrotate for WordPress
+      template:
+        src: ../templates/logrotate.conf.j2
+        dest: /etc/logrotate.d/wordpress
+      tags: log-management
+
+    # Cache Warming Script
+    - name: Create cache warming script
+      copy:
+        content: |
+          #!/bin/bash
+          # Cache warming script for WordPress
+          
+          WORDPRESS_URL="{{ wordpress_url }}"
+          SITEMAP_URL="${WORDPRESS_URL}/sitemap.xml"
+          
+          # Warm up homepage
+          curl -s "$WORDPRESS_URL" > /dev/null
+          
+          # Warm up sitemap URLs (if sitemap exists)
+          if curl -s "$SITEMAP_URL" | grep -q "xml"; then
+              curl -s "$SITEMAP_URL" | grep -oP 'https?://[^<]+' | head -20 | while read url; do
+                  curl -s "$url" > /dev/null
+                  sleep 1
+              done
+          fi
+        dest: /usr/local/bin/wordpress-cache-warm.sh
+        mode: '0755'
+      when: nginx_fastcgi_cache_enabled
+      tags: cache-optimization
+
+    - name: Schedule cache warming
+      cron:
+        name: "WordPress Cache Warming"
+        minute: "0"
+        hour: "6"
+        job: "/usr/local/bin/wordpress-cache-warm.sh"
+        user: www-data
+      when: nginx_fastcgi_cache_enabled
+      tags: cache-optimization
+
+    # Database Optimization
+    - name: Create database optimization script
+      copy:
+        content: |
+          #!/bin/bash
+          # WordPress Database Optimization Script
+          
+          cd {{ wordpress_path }}
+          
+          # Optimize database tables
+          wp db optimize --allow-root
+          
+          # Clean up spam comments
+          wp comment delete $(wp comment list --status=spam --format=ids --allow-root) --allow-root 2>/dev/null || true
+          
+          # Clean up trash posts
+          wp post delete $(wp post list --post_status=trash --format=ids --allow-root) --allow-root 2>/dev/null || true
+          
+          # Clean up expired transients
+          wp transient delete --expired --allow-root
+          
+          # Update search index (if search plugin is installed)
+          wp search-replace 'old-domain.com' '{{ domain_name }}' --dry-run --allow-root || true
+        dest: /usr/local/bin/wordpress-db-optimize.sh
+        mode: '0755'
+      tags: database-optimization
+
+    - name: Schedule weekly database optimization
+      cron:
+        name: "WordPress Database Optimization"
+        minute: "0"
+        hour: "3"
+        weekday: "0"
+        job: "/usr/local/bin/wordpress-db-optimize.sh"
+        user: root
+      tags: database-optimization
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: "{{ nginx_service }}"
+        state: restarted
+
+    - name: restart php-fpm
+      service:
+        name: "{{ php_fpm_service }}"
+        state: restarted
+
+    - name: restart mysql
+      service:
+        name: "{{ mysql_service }}"
+        state: restarted
+
+    - name: restart redis
+      service:
+        name: redis-server
+        state: restarted
+
+    - name: reload sysctl
+      command: sysctl -p /etc/sysctl.d/99-wordpress-performance.conf

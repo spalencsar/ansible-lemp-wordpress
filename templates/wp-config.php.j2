@@ -1,0 +1,86 @@
+<?php
+/**
+ * WordPress-Konfigurationsdatei
+ * Generiert durch Ansible
+ */
+
+// ** MySQL-Einstellungen ** //
+define( 'DB_NAME', '{{ wordpress_db_name }}' );
+define( 'DB_USER', '{{ wordpress_db_user }}' );
+define( 'DB_PASSWORD', '{{ wordpress_db_password }}' );
+define( 'DB_HOST', 'localhost' );
+define( 'DB_CHARSET', 'utf8mb4' );
+define( 'DB_COLLATE', '' );
+
+{% if enable_redis is defined and enable_redis %}
+// ** Redis Object Cache Konfiguration ** //
+define( 'WP_REDIS_HOST', '127.0.0.1' );
+define( 'WP_REDIS_PORT', 6379 );
+{% if redis_password is defined and redis_password %}
+define( 'WP_REDIS_PASSWORD', '{{ redis_password }}' );
+{% endif %}
+define( 'WP_REDIS_DATABASE', {{ redis_database | default('0') }} );
+define( 'WP_REDIS_TIMEOUT', {{ redis_timeout | default('1') }} );
+define( 'WP_REDIS_READ_TIMEOUT', {{ redis_read_timeout | default('1') }} );
+define( 'WP_CACHE', true );
+{% endif %}
+
+// ** Performance Optimierungen ** //
+define( 'WP_MEMORY_LIMIT', '{{ wp_memory_limit | default('256M') }}' );
+define( 'WP_MAX_MEMORY_LIMIT', '{{ wp_max_memory_limit | default('512M') }}' );
+
+// Cron-Optimierung
+{% if disable_wp_cron | default(true) %}
+define( 'DISABLE_WP_CRON', true );
+{% endif %}
+
+// Autosave-Intervall (in Sekunden)
+define( 'AUTOSAVE_INTERVAL', {{ wp_autosave_interval | default('300') }} );
+
+// Post-Revisionen begrenzen
+define( 'WP_POST_REVISIONS', {{ wp_post_revisions | default('3') }} );
+
+// Papierkorb-Aufbewahrung (in Tagen)
+define( 'EMPTY_TRASH_DAYS', {{ wp_empty_trash_days | default('7') }} );
+
+{% if nginx_fastcgi_cache_enabled | default(true) %}
+// FastCGI Cache Unterstützung
+define( 'WP_CACHE_KEY_SALT', '{{ domain_name | default('localhost') }}' );
+{% endif %}
+
+// ** Authentifizierungs-Schlüssel und Salts ** //
+define( 'AUTH_KEY',         '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}' );
+define( 'SECURE_AUTH_KEY',  '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}2' );
+define( 'LOGGED_IN_KEY',    '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}3' );
+define( 'NONCE_KEY',        '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}4' );
+define( 'AUTH_SALT',        '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}5' );
+define( 'SECURE_AUTH_SALT', '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}6' );
+define( 'LOGGED_IN_SALT',   '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}7' );
+define( 'NONCE_SALT',       '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}8' );
+
+// ** WordPress Tabellen-Präfix ** //
+$table_prefix = 'wp_';
+
+// ** Debugging ** //
+define( 'WP_DEBUG', false );
+define( 'WP_DEBUG_LOG', false );
+define( 'WP_DEBUG_DISPLAY', false );
+
+// ** WordPress-URLs ** //
+define( 'WP_HOME', 'http://{{ domain_name }}:8080' );
+define( 'WP_SITEURL', 'http://{{ domain_name }}:8080' );
+
+// ** Weitere Einstellungen ** //
+define( 'AUTOMATIC_UPDATER_DISABLED', false );
+define( 'WP_AUTO_UPDATE_CORE', true );
+define( 'FS_METHOD', 'direct' );
+
+/* Das war's, Schluss mit dem Bearbeiten! Viel Spaß beim Bloggen. */
+
+/** Absolute Pfad zum WordPress-Verzeichnis. */
+if ( ! defined( 'ABSPATH' ) ) {
+    define( 'ABSPATH', __DIR__ . '/' );
+}
+
+/** Lädt die WordPress-Variablen und -Dateien. */
+require_once ABSPATH . 'wp-settings.php';
