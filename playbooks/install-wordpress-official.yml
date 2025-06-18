@@ -140,7 +140,8 @@
         msg: |
           Status: {{ homepage_test.status | default('Fehler') }}
           Content-Length: {{ homepage_test.content | length if homepage_test.content is defined else 0 }}
-          Enthält WordPress: {{ 'Ja' if homepage_test.content is defined and 'WordPress' in homepage_test.content else 'Nein' }}
+          Enthält WordPress: {{ 'Ja' if homepage_test.content is defined and 
+                                'WordPress' in homepage_test.content else 'Nein' }}
           
     - name: Erfolgreiche Installation
       debug:

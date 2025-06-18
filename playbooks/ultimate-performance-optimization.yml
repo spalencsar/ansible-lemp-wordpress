@@ -5,7 +5,7 @@
   become: yes
   vars_files:
     - "../vars/{{ ansible_os_family | lower }}.yml"
-  
+
   vars:
     # Performance Configuration
     enable_performance_monitoring: "{{ enable_performance_monitoring | default(true) }}"
@@ -13,18 +13,18 @@
     enable_nginx_optimization: "{{ enable_nginx_optimization | default(true) }}"
     enable_php_optimization: "{{ enable_php_optimization | default(true) }}"
     enable_mysql_optimization: "{{ enable_mysql_optimization | default(true) }}"
-    
+
     # Nginx Performance Settings
     nginx_worker_processes: "{{ ansible_processor_vcpus }}"
     nginx_worker_connections: "{{ (ansible_memtotal_mb / 4) | int }}"
     nginx_fastcgi_cache_enabled: true
     nginx_fastcgi_cache_size: "{{ (ansible_memtotal_mb / 10) | int }}m"
-    
+
     # PHP Performance Settings
     php_memory_limit: "{{ (ansible_memtotal_mb / 4) | int }}M"
     php_max_execution_time: 300
     php_max_input_vars: 3000
-    
+
     # MySQL Performance Settings
     innodb_buffer_pool_size: "{{ (ansible_memtotal_mb / 2) | int }}M"
     max_connections: "{{ (ansible_memtotal_mb / 10) | int }}"
@@ -198,13 +198,13 @@
         content: |
           #!/bin/bash
           # Cache warming script for WordPress
-          
+
           WORDPRESS_URL="{{ wordpress_url }}"
           SITEMAP_URL="${WORDPRESS_URL}/sitemap.xml"
-          
+
           # Warm up homepage
           curl -s "$WORDPRESS_URL" > /dev/null
-          
+
           # Warm up sitemap URLs (if sitemap exists)
           if curl -s "$SITEMAP_URL" | grep -q "xml"; then
               curl -s "$SITEMAP_URL" | grep -oP 'https?://[^<]+' | head -20 | while read url; do
@@ -233,21 +233,21 @@
         content: |
           #!/bin/bash
           # WordPress Database Optimization Script
-          
+
           cd {{ wordpress_path }}
-          
+
           # Optimize database tables
           wp db optimize --allow-root
-          
+
           # Clean up spam comments
           wp comment delete $(wp comment list --status=spam --format=ids --allow-root) --allow-root 2>/dev/null || true
-          
+
           # Clean up trash posts
           wp post delete $(wp post list --post_status=trash --format=ids --allow-root) --allow-root 2>/dev/null || true
-          
+
           # Clean up expired transients
           wp transient delete --expired --allow-root
-          
+
           # Update search index (if search plugin is installed)
           wp search-replace 'old-domain.com' '{{ domain_name }}' --dry-run --allow-root || true
         dest: /usr/local/bin/wordpress-db-optimize.sh
