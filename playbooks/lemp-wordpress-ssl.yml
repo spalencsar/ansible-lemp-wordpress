@@ -5,7 +5,7 @@
   become: yes
   vars_files:
     - "../vars/{{ ansible_os_family | lower }}.yml"
-  
+
   vars:
     # SSL Configuration
     enable_ssl: "{{ enable_ssl | default(false) }}"
@@ -14,17 +14,17 @@
     ssl_certificate_path: "{{ ssl_certificate_path | default('/etc/ssl/certs/' + domain_name + '.crt') }}"
     ssl_certificate_key_path: "{{ ssl_certificate_key_path | default('/etc/ssl/private/' + domain_name + '.key') }}"
     letsencrypt_email: "{{ letsencrypt_email | default('admin@' + domain_name) }}"
-    
+
     # WordPress Configuration
     wordpress_path: /var/www/html
     wordpress_url: "{{ 'https://' + domain_name if enable_ssl else 'http://' + domain_name }}"
-    
+
     # Database Configuration
     mysql_root_password: "{{ mysql_root_password | default('secure_root_password_' + ansible_date_time.epoch) }}"
     wordpress_db_name: "{{ wordpress_db_name | default('wordpress_db') }}"
     wordpress_db_user: "{{ wordpress_db_user | default('wordpress_user') }}"
     wordpress_db_password: "{{ wordpress_db_password | default('secure_wp_password_' + ansible_date_time.epoch) }}"
-    
+
     # WordPress Admin
     wp_admin_user: "{{ wp_admin_user | default('admin') }}"
     wp_admin_password: "{{ wp_admin_password | default('secure_admin_password_' + ansible_date_time.epoch) }}"
@@ -35,7 +35,7 @@
     # Include base LEMP installation
     - name: Include base LEMP installation tasks
       include_tasks: lemp-base-tasks.yml
-    
+
     # SSL Certificate Management
     - name: Install Certbot for Let's Encrypt
       apt:
@@ -46,7 +46,7 @@
         update_cache: yes
       when: enable_ssl and ansible_os_family == "Debian"
       tags: ssl
-    
+
     - name: Install Certbot for Let's Encrypt (CentOS/RHEL)
       yum:
         name:
@@ -55,14 +55,14 @@
         state: present
       when: enable_ssl and ansible_os_family == "RedHat"
       tags: ssl
-    
+
     - name: Check if SSL certificate exists
       stat:
         path: "{{ ssl_certificate_path }}"
       register: ssl_cert_exists
       when: enable_ssl
       tags: ssl
-    
+
     - name: Create temporary HTTP Nginx config for Let's Encrypt
       template:
         src: ../templates/wordpress.nginx.j2
@@ -70,7 +70,7 @@
       when: enable_ssl and not ssl_cert_exists.stat.exists
       notify: restart nginx
       tags: ssl
-    
+
     - name: Enable temporary site
       file:
         src: /etc/nginx/sites-available/wordpress
@@ -79,11 +79,11 @@
       when: enable_ssl and not ssl_cert_exists.stat.exists
       notify: restart nginx
       tags: ssl
-    
+
     - name: Flush handlers to ensure Nginx is running
       meta: flush_handlers
       when: enable_ssl and not ssl_cert_exists.stat.exists
-    
+
     - name: Generate Let's Encrypt certificate
       command: >
         certbot --nginx --non-interactive --agree-tos
@@ -93,7 +93,7 @@
         --redirect
       when: enable_ssl and not ssl_cert_exists.stat.exists and domain_name != 'localhost'
       tags: ssl
-    
+
     - name: Create self-signed certificate for localhost/testing
       block:
         - name: Create SSL directory
@@ -101,7 +101,7 @@
             path: /etc/ssl/private
             state: directory
             mode: '0700'
-        
+
         - name: Generate self-signed certificate
           command: >
             openssl req -x509 -nodes -days 365 -newkey rsa:2048
@@ -112,7 +112,7 @@
             creates: "{{ ssl_certificate_path }}"
       when: enable_ssl and not ssl_cert_exists.stat.exists and domain_name == 'localhost'
       tags: ssl
-    
+
     # Nginx Configuration
     - name: Configure Nginx for WordPress with SSL
       template:
@@ -122,7 +122,7 @@
       when: enable_ssl
       notify: restart nginx
       tags: nginx
-    
+
     - name: Configure Nginx for WordPress without SSL
       template:
         src: ../templates/wordpress.nginx.j2
@@ -131,7 +131,7 @@
       when: not enable_ssl
       notify: restart nginx
       tags: nginx
-    
+
     - name: Enable WordPress site
       file:
         src: /etc/nginx/sites-available/wordpress
@@ -139,14 +139,14 @@
         state: link
       notify: restart nginx
       tags: nginx
-    
+
     - name: Remove default Nginx site
       file:
         path: /etc/nginx/sites-enabled/default
         state: absent
       notify: restart nginx
       tags: nginx
-    
+
     # Rate limiting configuration
     - name: Configure Nginx rate limiting
       blockinfile:
@@ -159,7 +159,7 @@
           limit_req_zone $binary_remote_addr zone=api:10m rate=10r/m;
       notify: restart nginx
       tags: nginx
-    
+
     # WordPress Configuration
     - name: Configure WordPress with SSL settings
       template:
@@ -169,7 +169,7 @@
         group: www-data
         mode: '0600'
       tags: wordpress
-    
+
     # SSL Auto-renewal
     - name: Set up Let's Encrypt auto-renewal
       cron:
@@ -179,7 +179,7 @@
         job: "/usr/bin/certbot renew --quiet"
       when: enable_ssl and domain_name != 'localhost'
       tags: ssl
-    
+
     # Firewall Configuration
     - name: Configure UFW for HTTP and HTTPS
       ufw:
@@ -191,18 +191,18 @@
         - "443"
       when: enable_ssl
       tags: firewall
-    
+
   handlers:
     - name: restart nginx
       service:
         name: nginx
         state: restarted
-    
+
     - name: restart php-fpm
       service:
         name: "php{{ php_version }}-fpm"
         state: restarted
-    
+
     - name: restart mysql
       service:
         name: "{{ mysql_service }}"

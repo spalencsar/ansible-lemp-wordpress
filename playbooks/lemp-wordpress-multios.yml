@@ -3,7 +3,7 @@
 - name: Install LEMP stack with WordPress (Multi-OS Support)
   hosts: all
   become: yes
-  
+
   pre_tasks:
     - name: Gather OS facts
       setup:
@@ -13,10 +13,10 @@
           - 'distribution'
           - 'distribution_version'
           - 'os_family'
-    
+
     - name: Load OS-specific variables
       include_vars: "../vars/{{ ansible_os_family | lower }}.yml"
-    
+
     - name: Debug OS information
       debug:
         msg: |
@@ -29,13 +29,13 @@
     # WordPress Configuration
     wordpress_path: "{{ web_root }}"
     wordpress_url: "http://{{ ansible_default_ipv4.address | default('localhost') }}"
-    
+
     # Database Configuration
     mysql_root_password: "{{ mysql_root_password | default('secure_root_password_' + ansible_date_time.epoch) }}"
     wordpress_db_name: "{{ wordpress_db_name | default('wordpress_db') }}"
     wordpress_db_user: "{{ wordpress_db_user | default('wordpress_user') }}"
     wordpress_db_password: "{{ wordpress_db_password | default('secure_wp_password_' + ansible_date_time.epoch) }}"
-    
+
     # WordPress Admin
     wp_admin_user: "{{ wp_admin_user | default('admin') }}"
     wp_admin_password: "{{ wp_admin_password | default('secure_admin_password_' + ansible_date_time.epoch) }}"

@@ -2,7 +2,7 @@
 - name: WordPress mit offiziellem WP-CLI installieren
   hosts: testservers
   become: yes
-  
+
   tasks:
     - name: WP-CLI von wp-cli.org herunterladen (offizielle Methode)
       shell: |
@@ -10,17 +10,17 @@
         curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
         chmod +x wp-cli.phar
         mv wp-cli.phar /usr/local/bin/wp
-        
+
     - name: WP-CLI testen
       shell: wp --info --allow-root
       register: wp_cli_test
       environment:
         WP_CLI_ALLOW_ROOT: 1
-        
+
     - name: WP-CLI Info
       debug:
         var: wp_cli_test.stdout_lines
-        
+
     - name: WordPress-Datenbank für WP-CLI vorbereiten
       shell: |
         mysql -h 127.0.0.1 -P 3306 -u root -psecure_root_pass_123 -e "
@@ -28,7 +28,7 @@
         CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
         FLUSH PRIVILEGES;
         "
-        
+
     - name: Alte WordPress-Dateien entfernen (außer wp-content)
       shell: |
         cd /var/www/html
@@ -38,11 +38,11 @@
         rm -rf wp-admin wp-includes
         ls -la
       register: cleanup
-      
+
     - name: Cleanup-Ergebnis
       debug:
         var: cleanup.stdout_lines
-        
+
     - name: WordPress-Core mit WP-CLI herunterladen
       shell: |
         cd /var/www/html
@@ -50,11 +50,11 @@
       register: wp_download
       environment:
         WP_CLI_ALLOW_ROOT: 1
-        
+
     - name: WordPress-Download Ergebnis
       debug:
         var: wp_download.stdout_lines
-        
+
     - name: wp-config.php mit WP-CLI erstellen
       shell: |
         cd /var/www/html
@@ -69,11 +69,11 @@
       register: wp_config
       environment:
         WP_CLI_ALLOW_ROOT: 1
-        
+
     - name: wp-config Ergebnis
       debug:
         var: wp_config.stdout_lines
-        
+
     - name: WordPress mit WP-CLI installieren
       shell: |
         cd /var/www/html
@@ -87,11 +87,11 @@
       register: wp_install
       environment:
         WP_CLI_ALLOW_ROOT: 1
-        
+
     - name: WordPress-Installation Ergebnis
       debug:
         var: wp_install.stdout_lines
-        
+
     - name: WordPress-Berechtigungen korrekt setzen
       shell: |
         cd /var/www/html
@@ -99,7 +99,7 @@
         find . -type d -exec chmod 755 {} \;
         find . -type f -exec chmod 644 {} \;
         chmod 600 wp-config.php
-        
+
     - name: WordPress-Status mit WP-CLI prüfen
       shell: |
         cd /var/www/html
@@ -117,16 +117,16 @@
       register: wp_status
       environment:
         WP_CLI_ALLOW_ROOT: 1
-        
+
     - name: WordPress-Status
       debug:
         var: wp_status.stdout_lines
-        
+
     - name: Services neustarten
       shell: |
         service php8.3-fpm restart
         service nginx restart
-        
+
     - name: WordPress-Homepage testen
       uri:
         url: http://localhost
@@ -134,27 +134,27 @@
         return_content: yes
       register: homepage_test
       ignore_errors: yes
-      
+
     - name: Homepage-Inhalt prüfen
       debug:
         msg: |
           Status: {{ homepage_test.status | default('Fehler') }}
           Content-Length: {{ homepage_test.content | length if homepage_test.content is defined else 0 }}
-          Enthält WordPress: {{ 'Ja' if homepage_test.content is defined and 
+          Enthält WordPress: {{ 'Ja' if homepage_test.content is defined and
                                 'WordPress' in homepage_test.content else 'Nein' }}
-          
+
     - name: Erfolgreiche Installation
       debug:
         msg: |
           🎉 WordPress erfolgreich installiert!
-          
+
           📱 URLs:
           - Homepage: http://localhost:8080
           - Admin: http://localhost:8080/wp-admin
-          
+
           🔑 Login-Daten:
           - Benutzername: admin
           - Passwort: admin123
           - E-Mail: admin@example.com
-          
+
           🛠 WP-CLI verfügbar unter: wp --allow-root

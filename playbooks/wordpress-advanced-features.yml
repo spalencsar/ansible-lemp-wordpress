@@ -5,26 +5,26 @@
   become: yes
   vars_files:
     - "../vars/{{ ansible_os_family | lower }}.yml"
-  
+
   vars:
     # Backup Configuration
     enable_backups: "{{ enable_backups | default(true) }}"
     backup_schedule: "{{ backup_schedule | default('0 2 * * *') }}"  # Daily at 2 AM
     backup_retention_days: "{{ backup_retention_days | default(7) }}"
     backup_destination: "{{ backup_destination | default('/var/backups/wordpress') }}"
-    
+
     # Performance Configuration
     enable_redis: "{{ enable_redis | default(false) }}"
     enable_memcached: "{{ enable_memcached | default(false) }}"
     enable_opcache: "{{ enable_opcache | default(true) }}"
-    
+
     # Security Configuration
     enable_fail2ban: "{{ enable_fail2ban | default(true) }}"
     enable_modsecurity: "{{ enable_modsecurity | default(false) }}"
-    
+
     # Monitoring Configuration
     enable_monitoring: "{{ enable_monitoring | default(false) }}"
-    
+
     # WordPress Multisite
     enable_multisite: "{{ enable_multisite | default(false) }}"
     multisite_type: "{{ multisite_type | default('subdirectory') }}"  # subdirectory or subdomain

@@ -11,7 +11,7 @@
     wordpress_admin_password: "admin_secure_pass_123"
     wordpress_admin_email: "admin@example.com"
     domain_name: "localhost"
-    
+
   tasks:
     - name: System aktualisieren
       apt:
