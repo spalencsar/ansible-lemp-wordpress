@@ -11,7 +11,7 @@ mysql_packages:
 php_packages:
   - php
   - php-fpm
-  - php-mysql
+  - php-mysqlnd  # Correct package name for CentOS
   - php-gd
   - php-xml
   - php-mbstring
@@ -19,7 +19,6 @@ php_packages:
   - php-zip
   - php-intl
   - php-soap
-  - php-xmlrpc
   - php-opcache
 
 # Service names

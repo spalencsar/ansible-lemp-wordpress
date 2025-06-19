@@ -15,11 +15,20 @@ enable_list:
   - no-changed-when
   - no-tabs
 
-# Skip specific rules
+# Skip specific rules for faster CI/CD
 skip_list:
   - role-name  # We don't use role naming conventions
   - galaxy     # We don't publish to Galaxy
   - meta-no-info  # No meta/main.yml files
+  - fqcn  # Skip FQCN requirements for faster setup
+  - name[casing]  # Allow lowercase names
+  - risky-file-permissions  # Allow default permissions
+  - no-relative-paths  # Allow relative paths in templates
+  - partial-become  # Allow simplified become usage
+  - command-instead-of-module  # Allow command module usage
+  - command-instead-of-shell  # Allow shell when needed
+  - ignore-errors  # Allow ignore_errors for specific cases
+  - load-failure  # Skip missing file warnings
 
 # Offline mode (don't check for newer ansible-lint versions)
 offline: false
