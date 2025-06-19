@@ -8,6 +8,11 @@
 [![Ansible](https://img.shields.io/badge/Ansible-6.0+-red)](https://www.ansible.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.8+-blue)](https://wordpress.org/)
 
+## 🌐 Other Languages
+
+- [🇩🇪 Deutsch](README.de.md)
+- [🇭🇺 Magyar](README.hu.md)
+
 ## 🎯 Features
 
 ### Core Infrastructure
