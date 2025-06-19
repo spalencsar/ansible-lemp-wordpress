@@ -3,7 +3,8 @@
 🚀 **Fully automated LEMP stack (Linux, Nginx, MySQL, PHP) + WordPress deployment using Ansible**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-orange)](https://ubuntu.com/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20|%2022.04%20|%2024.04-orange)](https://ubuntu.com/)
+[![Debian](https://img.shields.io/badge/Debian-11%20|%2012-red)](https://debian.org/)
 [![Ansible](https://img.shields.io/badge/Ansible-6.0+-red)](https://www.ansible.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.8+-blue)](https://wordpress.org/)
 
@@ -14,7 +15,7 @@
 - Nginx web server with optimized configuration
 - MySQL 8.0+ with secure setup  
 - PHP 8.3+ with FPM and WordPress extensions
-- Multi-OS support (Ubuntu, Debian, CentOS, RHEL, Rocky Linux)
+- Ubuntu/Debian family support (20.04, 22.04, 24.04, Debian 11, 12)
 
 ### WordPress & Security
 ✅ **WordPress Automation**
@@ -126,7 +127,7 @@ ansible-lemp-wordpress/
 
 ### Server Requirements
 
-- **OS**: Ubuntu 24.04+, Debian 12+, CentOS 8+, Rocky Linux 8+
+- **OS**: Ubuntu 20.04+, Debian 11+
 - **RAM**: Minimum 1GB (2GB+ recommended)
 - **Storage**: Minimum 10GB free space
 - **Network**: SSH access + web ports (80/443)
@@ -236,15 +237,15 @@ ansible-playbook -i inventory/production playbooks/wordpress-advanced-features.y
 - **Backup automation** with retention policies
 - **Health checks** and self-healing capabilities
 
-## 🌍 Multi-OS Support
+## 🌍 Ubuntu/Debian Support
 
 | OS | Version | Status |
 |---|---|---|
 | Ubuntu | 24.04 LTS | ✅ Fully Tested |
 | Ubuntu | 22.04 LTS | ✅ Supported |
-| Debian | 12+ | ✅ Supported |
-| CentOS | 8+ | 🔄 In Progress |
-| Rocky Linux | 8+ | 🔄 In Progress |
+| Ubuntu | 20.04 LTS | ✅ Supported |
+| Debian | 12 | ✅ Supported |
+| Debian | 11 | ✅ Supported |
 
 ## 📚 Documentation
 

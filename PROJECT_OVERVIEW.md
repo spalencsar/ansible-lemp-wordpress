@@ -4,7 +4,7 @@
 
 ### 📋 Project Status: **Production Ready** ✅
 
-This project provides a complete, production-ready automation solution for deploying LEMP stack (Linux, Nginx, MySQL, PHP) with WordPress using Ansible. It supports multiple operating systems, environments, and includes advanced features for security, performance, and monitoring.
+This project provides a complete, production-ready automation solution for deploying LEMP stack (Linux, Nginx, MySQL, PHP) with WordPress using Ansible. It supports Ubuntu/Debian systems and includes advanced features for security, performance, and monitoring.
 
 ## 🏗️ Architecture
 
@@ -13,21 +13,18 @@ ansible-lemp-wordpress/
 ├── playbooks/              # Main automation playbooks
 │   ├── lemp-wordpress.yml          # Basic LEMP + WordPress
 │   ├── lemp-wordpress-ssl.yml      # LEMP + WordPress + SSL
-│   ├── lemp-wordpress-multios.yml  # Multi-OS support
 │   ├── install-wordpress-official.yml # WordPress installation
+│   ├── ultimate-performance-optimization.yml # Performance features
 │   └── wordpress-advanced-features.yml # Advanced features
 ├── templates/              # Configuration templates
 │   ├── wp-config.php.j2           # WordPress configuration
-│   ├── wordpress.nginx.j2         # Basic Nginx config
+│   ├── wordpress.nginx.j2         # Nginx configuration
 │   ├── wordpress-ssl.nginx.j2     # SSL Nginx config
-│   ├── wordpress-redhat.nginx.j2  # RedHat/CentOS Nginx config
 │   ├── wordpress-backup.sh.j2     # Backup script
 │   ├── fail2ban-wordpress.conf.j2 # Fail2Ban config
 │   └── wp-cli.yml.j2             # WP-CLI configuration
-├── vars/                   # OS-specific variables
-│   ├── ubuntu.yml                 # Ubuntu/Debian variables
-│   ├── debian.yml                 # Debian-specific variables
-│   └── redhat.yml                 # CentOS/RHEL/Rocky variables
+├── vars/                   # System variables
+│   └── debian-family.yml          # Ubuntu/Debian variables
 ├── inventory/              # Inventory examples
 │   ├── docker.ini                 # Docker environment
 │   ├── production.example         # Production template
@@ -42,9 +39,8 @@ ansible-lemp-wordpress/
 │   ├── troubleshooting.md         # Troubleshooting guide
 │   └── contributing.md            # Contributing guidelines
 ├── .github/workflows/      # CI/CD automation
-│   ├── ci-cd.yml                  # Main CI/CD pipeline
-│   └── docs.yml                   # Documentation deployment
-├── tests/                  # Test scripts (future)
+│   └── ci-cd.yml                  # Main CI/CD pipeline
+├── tests/                  # Test scripts
 ├── CHANGELOG.md           # Version history
 ├── LICENSE                # MIT License
 ├── README.md              # Main documentation
@@ -57,9 +53,6 @@ ansible-lemp-wordpress/
 ### Operating Systems
 - ✅ **Ubuntu** 20.04, 22.04, 24.04 LTS
 - ✅ **Debian** 11, 12
-- ✅ **CentOS Stream** 9
-- ✅ **RHEL** 9
-- ✅ **Rocky Linux** 9
 
 ### Deployment Targets
 - ✅ **Docker** containers (development/testing)

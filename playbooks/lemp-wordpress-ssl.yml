@@ -44,16 +44,7 @@
           - python3-certbot-nginx
         state: present
         update_cache: yes
-      when: enable_ssl and ansible_os_family == "Debian"
-      tags: ssl
-
-    - name: Install Certbot for Let's Encrypt (CentOS/RHEL)
-      yum:
-        name:
-          - certbot
-          - python3-certbot-nginx
-        state: present
-      when: enable_ssl and ansible_os_family == "RedHat"
+      when: enable_ssl
       tags: ssl
 
     - name: Check if SSL certificate exists

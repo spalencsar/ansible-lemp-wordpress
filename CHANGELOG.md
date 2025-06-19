@@ -21,6 +21,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Troubleshooting guide
 
 ### Changed
+- **BREAKING**: Removed RedHat/CentOS/Rocky Linux support for stability
+- Focused on Ubuntu/Debian family systems only
+- Simplified CI/CD pipeline (removed CentOS tests)
+- Unified variables into single debian-family.yml file
+- Streamlined playbooks for better maintainability
+
+### Fixed
+- WP-CLI download from official source
+- MySQL user permissions for TCP connections
+- PHP-FPM socket permissions
+- Service management across different OS families
+
+### Removed
+- RedHat/CentOS/Rocky Linux specific code and variables
+- CentOS Docker tests from CI/CD pipeline
+- Multi-OS complexity that caused maintenance issues
+
+## [1.0.0] - 2025-06-19
+
+### Added
+- SSL/HTTPS support with Let's Encrypt integration
+- Ubuntu/Debian support (20.04, 22.04, 24.04, Debian 11, 12)
+- GitHub Actions CI/CD pipeline
+- Advanced WordPress features (Redis, Memcached, Fail2Ban)
+- Automated backup system
+- WordPress Multisite support
+- Performance optimizations (OPcache, MySQL tuning)
+- Security enhancements (Fail2Ban, ModSecurity ready)
+- Comprehensive documentation
+- Contributing guidelines
+- Troubleshooting guide
+
+### Changed
 - Restructured project for better maintainability
 - Improved error handling in playbooks
 - Enhanced variable management with OS-specific files
@@ -31,21 +64,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MySQL user permissions for TCP connections
 - PHP-FPM socket permissions
 - Service management across different OS families
-
-## [1.0.0] - 2025-06-18
-
-### Added
-- Initial release
-- Basic LEMP stack installation (Linux, Nginx, MySQL, PHP)
-- WordPress installation and configuration
-- WP-CLI integration
-- Docker environment for testing
-- Basic Ansible playbooks
-- Templates for configuration files
-
-### Features
-- Automated Nginx configuration
-- MySQL database setup with security
-- PHP-FPM optimization
-- WordPress installation via WP-CLI
-- Basic security configurations

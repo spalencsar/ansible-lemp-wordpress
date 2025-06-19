@@ -1,6 +1,6 @@
-# Ubuntu-specific variables
+# Ubuntu/Debian family variables
 ---
-# Package names for Ubuntu
+# Package names for Ubuntu/Debian systems
 packages:
   - nginx
   - mysql-server
@@ -37,3 +37,9 @@ nginx_sites_enabled: /etc/nginx/sites-enabled
 
 # MySQL paths
 mysql_config_path: /etc/mysql
+
+# Default PHP version
+php_version: "8.3"
+
+# System paths
+web_root: /var/www/html

@@ -1,168 +1,272 @@
 ---
-- name: LEMP Stack + WordPress Installation auf Ubuntu
-  hosts: testservers
+# Ubuntu/Debian LEMP WordPress installation
+- name: Install LEMP stack with WordPress (Ubuntu/Debian)
+  hosts: all
   become: yes
+
+  pre_tasks:
+    - name: Gather OS facts
+      setup:
+        gather_subset:
+          - '!all'
+          - '!min'
+          - 'distribution'
+          - 'distribution_version'
+          - 'os_family'
+
+    - name: Load Debian family variables
+      include_vars: "../vars/debian-family.yml"
+
+    - name: Debug OS information
+      debug:
+        msg: |
+          OS Family: {{ ansible_os_family }}
+          Distribution: {{ ansible_distribution }}
+          Version: {{ ansible_distribution_version }}
+          Supported: Ubuntu/Debian family systems
+
+    - name: Verify supported OS
+      fail:
+        msg: "This playbook only supports Ubuntu/Debian systems. Detected: {{ ansible_os_family }}"
+      when: ansible_os_family != "Debian"
+
   vars:
-    mysql_root_password: "secure_root_pass_123"
-    wordpress_db_name: "wordpress"
-    wordpress_db_user: "wp_user"
-    wordpress_db_password: "wp_secure_pass_123"
-    wordpress_admin_user: "admin"
-    wordpress_admin_password: "admin_secure_pass_123"
-    wordpress_admin_email: "admin@example.com"
-    domain_name: "localhost"
+    # WordPress Configuration
+    wordpress_path: "{{ web_root }}"
+    wordpress_url: "http://{{ ansible_default_ipv4.address | default('localhost') }}"
+
+    # Database Configuration
+    mysql_root_password: "{{ mysql_root_password | default('secure_root_password_' + ansible_date_time.epoch) }}"
+    wordpress_db_name: "{{ wordpress_db_name | default('wordpress_db') }}"
+    wordpress_db_user: "{{ wordpress_db_user | default('wordpress_user') }}"
+    wordpress_db_password: "{{ wordpress_db_password | default('secure_wp_password_' + ansible_date_time.epoch) }}"
+
+    # WordPress Admin
+    wp_admin_user: "{{ wp_admin_user | default('admin') }}"
+    wp_admin_password: "{{ wp_admin_password | default('secure_admin_password_' + ansible_date_time.epoch) }}"
+    wp_admin_email: "{{ wp_admin_email | default('admin@localhost') }}"
+    wp_site_title: "{{ wp_site_title | default('My WordPress Site') }}"
 
   tasks:
-    - name: System aktualisieren
+    # Package Installation
+    - name: Update package cache
       apt:
         update_cache: yes
-        upgrade: dist
         cache_valid_time: 3600
+      tags: packages
 
-    - name: Notwendige Pakete installieren
-      apt:
-        name:
-          - nginx
-          - mysql-server
-          - php8.3-fpm
-          - php8.3-mysql
-          - php8.3-curl
-          - php8.3-gd
-          - php8.3-intl
-          - php8.3-mbstring
-          - php8.3-soap
-          - php8.3-xml
-          - php8.3-xmlrpc
-          - php8.3-zip
-          - curl
-          - wget
-          - unzip
-          - python3-pymysql
+    - name: Install all required packages
+      package:
+        name: "{{ packages }}"
         state: present
+      tags: packages
 
-    - name: MySQL-Service starten und aktivieren
-      shell: |
-        service mysql start
-        update-rc.d mysql enable
-      become: yes
+    # Service Management
+    - name: Start and enable Nginx
+      service:
+        name: "{{ nginx_service }}"
+        state: started
+        enabled: yes
+      tags: nginx
 
-    - name: MySQL root-Passwort setzen
+    - name: Start and enable MySQL/MariaDB
+      service:
+        name: "{{ mysql_service }}"
+        state: started
+        enabled: yes
+      tags: mysql
+
+    - name: Start and enable PHP-FPM
+      service:
+        name: "{{ php_fpm_service }}"
+        state: started
+        enabled: yes
+      tags: php
+
+    # Firewall Configuration
+    - name: Configure firewall (UFW)
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "22"
+        - "80"
+        - "443"
+      tags: firewall
+
+    # MySQL Security
+    - name: Set MySQL root password
       mysql_user:
         name: root
         password: "{{ mysql_root_password }}"
         login_unix_socket: /var/run/mysqld/mysqld.sock
-        column_case_sensitive: false
         state: present
+      tags: mysql
 
-    - name: MySQL-Konfiguration für root
-      copy:
-        content: |
-          [client]
-          user=root
-          password={{ mysql_root_password }}
+    - name: Create MySQL configuration for root
+      template:
+        src: ../templates/my.cnf.j2
         dest: /root/.my.cnf
         mode: '0600'
+      tags: mysql
 
-    - name: WordPress-Datenbank erstellen
+    - name: Remove anonymous MySQL users
+      mysql_user:
+        name: ""
+        host_all: yes
+        state: absent
+      tags: mysql
+
+    - name: Remove MySQL test database
+      mysql_db:
+        name: test
+        state: absent
+      tags: mysql
+
+    # WordPress Database Setup
+    - name: Create WordPress database
       mysql_db:
         name: "{{ wordpress_db_name }}"
         state: present
-        login_user: root
-        login_password: "{{ mysql_root_password }}"
+      tags: mysql
 
-    - name: WordPress-Datenbankuser erstellen
+    - name: Create WordPress database user
       mysql_user:
         name: "{{ wordpress_db_user }}"
         password: "{{ wordpress_db_password }}"
         priv: "{{ wordpress_db_name }}.*:ALL"
-        column_case_sensitive: false
+        host: localhost
         state: present
-        login_user: root
-        login_password: "{{ mysql_root_password }}"
+      tags: mysql
 
-    - name: WordPress herunterladen
-      get_url:
-        url: https://wordpress.org/latest.tar.gz
-        dest: /tmp/wordpress.tar.gz
-
-    - name: WordPress entpacken
-      unarchive:
-        src: /tmp/wordpress.tar.gz
-        dest: /tmp
-        remote_src: yes
-
-    - name: WordPress-Dateien kopieren
-      copy:
-        src: /tmp/wordpress/
-        dest: /var/www/html/
-        remote_src: yes
-        owner: www-data
-        group: www-data
-        mode: '0755'
-
-    - name: wp-config.php erstellen
-      template:
-        src: wp-config.php.j2
-        dest: /var/www/html/wp-config.php
-        owner: www-data
-        group: www-data
-        mode: '0644'
-
-    - name: Nginx-Konfiguration für WordPress
-      template:
-        src: wordpress.nginx.j2
-        dest: /etc/nginx/sites-available/wordpress
-        backup: yes
-
-    - name: Standard Nginx-Site deaktivieren
+    # WordPress Installation
+    - name: Create web root directory
       file:
-        path: /etc/nginx/sites-enabled/default
-        state: absent
-
-    - name: WordPress-Site aktivieren
-      file:
-        src: /etc/nginx/sites-available/wordpress
-        dest: /etc/nginx/sites-enabled/wordpress
-        state: link
-
-    - name: Nginx-Konfiguration testen
-      command: nginx -t
-      register: nginx_test
-      failed_when: nginx_test.rc != 0
-
-    - name: PHP-FPM Service starten
-      shell: service php8.3-fpm start
-      become: yes
-
-    - name: Nginx Service neustarten
-      shell: service nginx restart
-      become: yes
-
-    - name: WordPress-Verzeichnis-Berechtigungen setzen
-      file:
-        path: /var/www/html
-        owner: www-data
-        group: www-data
-        recurse: yes
-        mode: '0755'
-
-    - name: Spezielle WordPress-Verzeichnisse erstellen
-      file:
-        path: "{{ item }}"
+        path: "{{ wordpress_path }}"
         state: directory
         owner: www-data
         group: www-data
         mode: '0755'
-      loop:
-        - /var/www/html/wp-content/uploads
-        - /var/www/html/wp-content/upgrade
+      tags: wordpress
 
-    - name: Installation abgeschlossen - Info ausgeben
+    - name: Download WordPress
+      get_url:
+        url: https://wordpress.org/latest.tar.gz
+        dest: /tmp/wordpress.tar.gz
+        mode: '0644'
+      tags: wordpress
+
+    - name: Extract WordPress
+      unarchive:
+        src: /tmp/wordpress.tar.gz
+        dest: /tmp/
+        remote_src: yes
+      tags: wordpress
+
+    - name: Copy WordPress files
+      command: "cp -r /tmp/wordpress/* {{ wordpress_path }}/"
+      args:
+        creates: "{{ wordpress_path }}/wp-config-sample.php"
+      tags: wordpress
+
+    - name: Set WordPress file permissions
+      file:
+        path: "{{ wordpress_path }}"
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_user }}"
+        recurse: yes
+      tags: wordpress
+
+    # Nginx Configuration
+    - name: Configure Nginx for WordPress
+      template:
+        src: ../templates/wordpress.nginx.j2
+        dest: "{{ nginx_sites_available }}/wordpress"
+      notify: restart nginx
+      tags: nginx
+
+    - name: Enable WordPress site
+      file:
+        src: "{{ nginx_sites_available }}/wordpress"
+        dest: "{{ nginx_sites_enabled }}/wordpress"
+        state: link
+      notify: restart nginx
+      tags: nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: "{{ nginx_sites_enabled }}/default"
+        state: absent
+      notify: restart nginx
+      tags: nginx
+
+    # PHP Configuration
+    - name: Configure PHP-FPM pool
+      template:
+        src: ../templates/www.conf.j2
+        dest: "{{ php_fpm_pool_path }}/www.conf"
+        backup: yes
+      notify: restart php-fpm
+      tags: php
+
+    - name: Configure PHP settings
+      lineinfile:
+        path: "{{ php_cli_config_path }}/php.ini"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - { regexp: '^upload_max_filesize', line: 'upload_max_filesize = 64M' }
+        - { regexp: '^post_max_size', line: 'post_max_size = 64M' }
+        - { regexp: '^memory_limit', line: 'memory_limit = 256M' }
+        - { regexp: '^max_execution_time', line: 'max_execution_time = 300' }
+      notify: restart php-fpm
+      tags: php
+
+    # WordPress Configuration
+    - name: Configure WordPress
+      template:
+        src: ../templates/wp-config.php.j2
+        dest: "{{ wordpress_path }}/wp-config.php"
+        owner: www-data
+        group: www-data
+        mode: '0600'
+      tags: wordpress
+
+    # WP-CLI Installation
+    - name: Download WP-CLI
+      get_url:
+        url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+        dest: /usr/local/bin/wp
+        mode: '0755'
+      tags: wp-cli
+
+    - name: Verify WP-CLI installation
+      command: wp --info
+      become_user: www-data
+      environment:
+        HOME: "{{ wordpress_path }}"
+      register: wp_cli_info
+      tags: wp-cli
+
+    - name: Display WP-CLI info
       debug:
-        msg: |
-          WordPress-Installation abgeschlossen!
-          URL: http://{{ domain_name }}:8080
-          Admin-User: {{ wordpress_admin_user }}
-          Admin-Passwort: {{ wordpress_admin_password }}
-          DB-Name: {{ wordpress_db_name }}
-          DB-User: {{ wordpress_db_user }}
+        var: wp_cli_info.stdout_lines
+      tags: wp-cli
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: "{{ nginx_service }}"
+        state: restarted
+
+    - name: restart php-fpm
+      service:
+        name: "{{ php_fpm_service }}"
+        state: restarted
+
+    - name: restart mysql
+      service:
+        name: "{{ mysql_service }}"
+        state: restarted
