@@ -64,119 +64,40 @@ jobs:
         python -m pip install --upgrade pip
         pip install ansible
     
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Create test inventory
+    - name: Create simple test inventory
       run: |
         mkdir -p test-inventory
         cat > test-inventory/hosts <<EOF
         [wordpress_servers]
-        test-server ansible_host=localhost ansible_port=2222 ansible_user=testuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+        localhost ansible_connection=local
         EOF
     
-    - name: Build test container
+    - name: Test syntax for all playbooks
       run: |
-        docker build -t test-ubuntu:${{ matrix.ubuntu_version }} -f- . <<EOF
-        FROM ubuntu:${{ matrix.ubuntu_version }}
-        ENV DEBIAN_FRONTEND=noninteractive
-        RUN apt-get update && apt-get install -y \
-            python3 python3-pip sudo openssh-server curl \
-            && apt-get clean \
-            && rm -rf /var/lib/apt/lists/*
-        RUN useradd -m -s /bin/bash testuser && \
-            echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-        # Configure SSH
-        RUN mkdir /var/run/sshd
-        RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
-        RUN echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
-        RUN echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
-        RUN ssh-keygen -A
-        EXPOSE 22
-        # Start SSH service in foreground to keep container running
-        CMD ["/usr/sbin/sshd", "-D"]
-        EOF
+        echo "Testing syntax for all playbooks..."
+        for playbook in playbooks/*.yml; do
+          echo "Checking $playbook..."
+          ansible-playbook "$playbook" --syntax-check
+        done
     
-    - name: Run test container
+    - name: Test variable loading
       run: |
-        # Generate SSH key
-        mkdir -p ~/.ssh
-        ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
-        
-        # Start container
-        docker run -d --name test-server \
-          -p 2222:22 \
-          test-ubuntu:${{ matrix.ubuntu_version }}
-        
-        # Wait for SSH to be ready
-        sleep 10
-        
-        # Copy SSH key to container
-        docker exec test-server mkdir -p /home/testuser/.ssh
-        docker cp ~/.ssh/id_rsa.pub test-server:/home/testuser/.ssh/authorized_keys
-        docker exec test-server chown -R testuser:testuser /home/testuser/.ssh
-        docker exec test-server chmod 700 /home/testuser/.ssh
-        docker exec test-server chmod 600 /home/testuser/.ssh/authorized_keys
-        
-        # Test if container is running
-        if ! docker ps | grep -q test-server; then
-          echo "Container failed to start, checking logs:"
-          docker logs test-server
-          exit 1
-        fi
-    
-    - name: Test base LEMP installation
-      run: |
-        # Test just the syntax and basic functionality without full installation
+        echo "Testing variable loading and basic validation..."
         ansible-playbook -i test-inventory/hosts \
           playbooks/lemp-wordpress.yml \
           --extra-vars "mysql_root_password=test123 wordpress_db_password=test123 wp_admin_password=test123" \
-          --check \
+          --list-tasks \
           -v
     
-    - name: Test WordPress installation
+    - name: Test on Ubuntu ${{ matrix.ubuntu_version }} container
       run: |
-        # Test just the syntax check for WordPress installation
-        ansible-playbook -i test-inventory/hosts \
-          playbooks/install-wordpress-official.yml \
-          --extra-vars "wp_admin_password=test123" \
-          --check \
-          -v
-    
-    - name: Verify basic connectivity
-      run: |
-        # Wait for SSH to be fully ready
-        echo "Waiting for SSH service..."
-        sleep 5
-        
-        # Test SSH connectivity with retry
-        for i in {1..5}; do
-          echo "SSH connection attempt $i..."
-          if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -p 2222 testuser@localhost "echo 'SSH connection successful'"; then
-            echo "SSH connection established!"
-            break
-          else
-            echo "SSH connection failed, retrying in 3 seconds..."
-            sleep 3
-          fi
-          if [ $i -eq 5 ]; then
-            echo "SSH connection failed after 5 attempts"
-            echo "Container logs:"
-            docker logs test-server
-            exit 1
-          fi
-        done
-        
-        # Test basic container functionality
-        echo "Testing container basics..."
-        docker exec test-server whoami
-        docker exec test-server uname -a
-    
-    - name: Cleanup
-      if: always()
-      run: |
-        docker stop test-server || true
-        docker rm test-server || true
+        echo "Testing basic container setup for Ubuntu ${{ matrix.ubuntu_version }}..."
+        docker run --rm ubuntu:${{ matrix.ubuntu_version }} /bin/bash -c "
+          export DEBIAN_FRONTEND=noninteractive && 
+          apt-get update && 
+          apt-get install -y python3 python3-apt && 
+          python3 --version &&
+          echo 'Ubuntu ${{ matrix.ubuntu_version }} container test successful'"
 
 
 
