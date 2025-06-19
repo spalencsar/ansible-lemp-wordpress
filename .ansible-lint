@@ -39,10 +39,6 @@ rules:
   comments:
     min-spaces-from-content: 1
 
-# Use specific Ansible version for linting
-supported_ansible_versions:
-  - ">=6.0"
-
 # Offline mode (don't check for newer ansible-lint versions)
 offline: false
 
