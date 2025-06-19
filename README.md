@@ -281,9 +281,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 📧 **Issues**: [GitHub Issues](https://github.com/yourusername/ansible-lemp-wordpress/issues)
-- 📖 **Documentation**: [Wiki](https://github.com/yourusername/ansible-lemp-wordpress/wiki)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/ansible-lemp-wordpress/discussions)
+- 📧 **Issues**: [GitHub Issues](https://github.com/spalencsar/ansible-lemp-wordpress/issues)
+- 📖 **Documentation**: [Wiki](https://github.com/spalencsar/ansible-lemp-wordpress/wiki)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/spalencsar/ansible-lemp-wordpress/discussions)
 
 ---
 
