@@ -89,7 +89,7 @@
         state: present
       tags: php
 
-    - name: Install additional tools
+    - name: Install additional tools (Debian/Ubuntu)
       package:
         name:
           - curl
@@ -97,6 +97,19 @@
           - unzip
           - git
         state: present
+      when: ansible_os_family == "Debian"
+      tags: tools
+
+    - name: Install additional tools (RedHat/CentOS)
+      yum:
+        name:
+          - curl
+          - wget
+          - unzip
+          - git
+        state: present
+        allowerasing: yes
+      when: ansible_os_family == "RedHat"
       tags: tools
 
     # Service Management
