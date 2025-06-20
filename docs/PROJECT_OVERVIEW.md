@@ -23,6 +23,7 @@ ansible-lemp-wordpress/
 │   └── debian-family.yml          # Ubuntu/Debian variables
 ├── inventory/              # Inventory configurations
 │   ├── production.yml              # Production server template
+│   ├── production.yml.example      # Production template example
 │   └── docker.yml                 # Docker testing environment
 ├── docker/                 # Docker testing environment
 │   ├── Dockerfile                 # Ubuntu container for testing
@@ -36,12 +37,13 @@ ansible-lemp-wordpress/
 │   ├── vault.md                   # Ansible Vault security guide
 │   ├── PROJECT_OVERVIEW.md        # This file
 │   ├── README.de.md               # German documentation
-│   ├── README.hu.md               # Hungarian documentation
-│   ├── RELEASE_NOTES_v1.0.0.md    # Release notes
-│   └── RELEASE_NOTES_v1.1.0.md    # Release notes
+│   └── README.hu.md               # Hungarian documentation
 ├── .github/workflows/      # CI/CD automation
-│   └── ci-cd.yml                  # Main CI/CD pipeline
-├── tests/                  # Test scripts
+│   └── ci-cd.yml                  # Ansible testing pipeline
+├── tests/                  # Test scripts and validation
+│   ├── integration-test.sh         # Full deployment testing
+│   ├── final-test.sh              # Post-deployment validation
+│   └── validate-inventory.py      # Inventory validation script
 ├── CHANGELOG.md           # Version history
 ├── CONTRIBUTING.md        # Contributing guidelines
 ├── LICENSE                # MIT License
@@ -78,7 +80,7 @@ ansible-lemp-wordpress/
 - ✅ **Bare Metal** servers
 - ✅ **VPS** providers
 
-## � Features Comparison
+## 📋 Features Comparison
 
 | Feature | Basic Mode | Ultimate Mode |
 |---------|------------|---------------|
@@ -93,7 +95,7 @@ ansible-lemp-wordpress/
 | Nginx Optimization | ❌ | ✅ |
 | MySQL Performance Tuning | ❌ | ✅ |
 
-## � Quick Deployment Commands
+## ⚡ Quick Deployment Commands
 
 ### Test in Docker First
 ```bash
@@ -163,16 +165,16 @@ ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.y
 ## 📊 Performance Metrics
 
 ### Basic Mode Performance
-- **Page Load Time**: < 300ms (fresh WordPress)
+- **Page Load Time**: < 800ms (fresh WordPress, depending on content)
 - **Server Resources**: Optimized for 1GB+ RAM servers
 - **Database Performance**: Tuned MySQL configuration
 - **Web Server**: Nginx with gzip and caching headers
 
 ### Ultimate Mode Performance
-- **Page Load Time**: < 150ms (with Redis cache)
+- **Page Load Time**: < 500ms (with Redis cache, depending on content)
 - **Memory Usage**: PHP OPcache reduces CPU load by 30-50%
 - **Database Queries**: Redis object cache reduces DB load by 60-80%
-- **Concurrent Users**: Handles 200+ concurrent users on 2GB RAM
+- **Concurrent Users**: Handles 100+ concurrent users on 2GB RAM
 
 ## 🎯 Project Statistics
 
@@ -181,7 +183,7 @@ ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.y
 - **Supported OS**: Ubuntu 20.04/22.04/24.04, Debian 11/12
 - **Deployment Modes**: 2 (Basic + Ultimate)
 - **Templates**: 5 (production-tested)
-- **Documentation Pages**: 8 comprehensive guides
+- **Documentation Pages**: 9 comprehensive guides (README + 8 in docs/)
 - **Test Coverage**: Docker + real server testing
 - **License**: MIT (fully open source)
 
