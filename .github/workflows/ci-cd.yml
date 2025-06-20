@@ -143,20 +143,24 @@ jobs:
     - name: Get latest tag
       id: get_tag
       run: |
-        latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        # Get the latest tag, default to v1.0.0 if none exist
+        latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
         echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+        echo "Found latest tag: $latest_tag"
     
     - name: Generate changelog
       run: |
-        echo "# Changelog" > CHANGELOG_RELEASE.md
+        echo "# Release Notes" > CHANGELOG_RELEASE.md
         echo "" >> CHANGELOG_RELEASE.md
-        git log ${{ steps.get_tag.outputs.latest_tag }}..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG_RELEASE.md
+        echo "## Changes since ${{ steps.get_tag.outputs.latest_tag }}" >> CHANGELOG_RELEASE.md
+        echo "" >> CHANGELOG_RELEASE.md
+        git log ${{ steps.get_tag.outputs.latest_tag }}..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG_RELEASE.md || echo "- No changes since last release" >> CHANGELOG_RELEASE.md
     
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v${{ github.run_number }}
-        name: Release v${{ github.run_number }}
+        tag_name: v1.1.0
+        name: Release v1.1.0 - Multilingual & Stability Improvements
         body_path: CHANGELOG_RELEASE.md
         draft: false
         prerelease: false

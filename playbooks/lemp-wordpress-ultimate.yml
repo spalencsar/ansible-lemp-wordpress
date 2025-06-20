@@ -1,6 +1,6 @@
 ---
-# Ubuntu/Debian LEMP WordPress installation
-- name: Install LEMP stack with WordPress (Ubuntu/Debian)
+# Ultimate LEMP WordPress installation with Redis, OPcache and Nginx Optimization
+- name: Install Ultimate LEMP stack with WordPress, Redis, OPcache and Nginx Performance (Ubuntu/Debian)
   hosts: all
   become: yes
 
@@ -229,10 +229,11 @@
       tags: ssl
 
     # Nginx Configuration
-    - name: Configure Nginx for WordPress
+    - name: Create Nginx configuration for WordPress
       template:
         src: ../templates/{% if ssl_enabled | default(false) %}wordpress-ssl.nginx.j2{% else %}wordpress.nginx.j2{% endif %}
         dest: "{{ nginx_sites_available }}/wordpress"
+        backup: yes
       notify: restart nginx
       tags: nginx
 
@@ -271,6 +272,7 @@
         - { regexp: '^post_max_size', line: 'post_max_size = 64M' }
         - { regexp: '^memory_limit', line: 'memory_limit = 256M' }
         - { regexp: '^max_execution_time', line: 'max_execution_time = 300' }
+        - { regexp: '^disable_functions', line: 'disable_functions = ' }
       notify: restart php-fpm
       tags: php
 
@@ -337,6 +339,224 @@
           Admin Email: {{ wp_admin_email }}
       tags: wp-install
 
+    # =============================
+    # REDIS CACHE (ULTIMATE FEATURE)
+    # =============================
+    - name: Install Redis server
+      package:
+        name: redis-server
+        state: present
+      when: enable_redis | default(false)
+      tags: redis
+
+    - name: Start and enable Redis
+      service:
+        name: redis-server
+        state: started
+        enabled: yes
+      when: enable_redis | default(false)
+      tags: redis
+
+    - name: Configure Redis for WordPress
+      lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - { regexp: '^# maxmemory', line: 'maxmemory 128mb' }
+        - { regexp: '^# maxmemory-policy', line: 'maxmemory-policy allkeys-lru' }
+        - { regexp: '^save 900 1', line: 'save 900 1' }
+      when: enable_redis | default(false)
+      notify: restart redis
+      tags: redis
+
+    - name: Install Redis Object Cache plugin
+      command: >
+        wp plugin install redis-cache --activate
+        --path="{{ wordpress_path }}"
+        --allow-root
+      environment:
+        HOME: "{{ wordpress_path }}"
+      when: enable_redis | default(false)
+      tags: redis
+
+    - name: Enable Redis object cache
+      command: >
+        wp redis enable
+        --path="{{ wordpress_path }}"
+        --allow-root
+      environment:
+        HOME: "{{ wordpress_path }}"
+      when: enable_redis | default(false)
+      ignore_errors: yes
+      tags: redis
+
+    - name: Display Redis status
+      debug:
+        msg: "Redis caching {{ 'ENABLED' if enable_redis | default(false) else 'DISABLED' }}"
+      tags: redis
+
+    # =============================
+    # OPCACHE OPTIMIZATION (ULTIMATE FEATURE)
+    # =============================
+    - name: Configure OPcache for WordPress
+      lineinfile:
+        path: "{{ php_cli_config_path }}/php.ini"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - { regexp: '^;?opcache.enable=', line: 'opcache.enable=1' }
+        - { regexp: '^;?opcache.memory_consumption=', line: 'opcache.memory_consumption=128' }
+        - { regexp: '^;?opcache.interned_strings_buffer=', line: 'opcache.interned_strings_buffer=8' }
+        - { regexp: '^;?opcache.max_accelerated_files=', line: 'opcache.max_accelerated_files=4000' }
+        - { regexp: '^;?opcache.revalidate_freq=', line: 'opcache.revalidate_freq=2' }
+        - { regexp: '^;?opcache.fast_shutdown=', line: 'opcache.fast_shutdown=1' }
+      when: enable_opcache | default(false)
+      notify: restart php-fpm
+      tags: opcache
+
+    - name: Configure OPcache for PHP-FPM
+      lineinfile:
+        path: "/etc/php/{{ php_version }}/fpm/php.ini"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - { regexp: '^;?opcache.enable=', line: 'opcache.enable=1' }
+        - { regexp: '^;?opcache.memory_consumption=', line: 'opcache.memory_consumption=128' }
+        - { regexp: '^;?opcache.interned_strings_buffer=', line: 'opcache.interned_strings_buffer=8' }
+        - { regexp: '^;?opcache.max_accelerated_files=', line: 'opcache.max_accelerated_files=4000' }
+        - { regexp: '^;?opcache.revalidate_freq=', line: 'opcache.revalidate_freq=2' }
+        - { regexp: '^;?opcache.fast_shutdown=', line: 'opcache.fast_shutdown=1' }
+      when: enable_opcache | default(false)
+      notify: restart php-fpm
+      tags: opcache
+
+    - name: Display OPcache status
+      debug:
+        msg: "OPcache optimization {{ 'ENABLED' if enable_opcache | default(false) else 'DISABLED' }}"
+      tags: opcache
+
+    # =============================
+    # NGINX PERFORMANCE OPTIMIZATION (ULTIMATE FEATURE)
+    # =============================
+    - name: Backup original nginx.conf
+      copy:
+        src: /etc/nginx/nginx.conf
+        dest: /etc/nginx/nginx.conf.backup
+        remote_src: yes
+      when: enable_nginx_optimization | default(false)
+      tags: nginx-optimization
+
+    # Clean up any existing ansible-managed blocks first
+    - name: Remove existing ansible-managed blocks from nginx.conf
+      blockinfile:
+        path: /etc/nginx/nginx.conf
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - Ultimate Performance"
+        state: absent
+      when: enable_nginx_optimization | default(false)
+      tags: nginx-optimization
+
+    - name: Remove duplicate worker directives from wrong blocks
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: "{{ item }}"
+        state: absent
+      loop:
+        - '^\s*worker_processes\s+auto;.*# Added by Ansible'
+        - '^\s*worker_rlimit_nofile\s+65535;.*# Added by Ansible'
+      when: enable_nginx_optimization | default(false)
+      tags: nginx-optimization
+
+    # Configure Worker settings in main block (before events)
+    - name: Configure Nginx worker settings in main block (before events)
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        insertbefore: "events {"
+        backup: yes
+      loop:
+        - { regexp: '^worker_processes', line: 'worker_processes auto;' }
+        - { regexp: '^worker_rlimit_nofile', line: 'worker_rlimit_nofile 65535;' }
+      when: enable_nginx_optimization | default(false)
+      notify: restart nginx
+      tags: nginx-optimization
+
+    - name: Configure Nginx events block
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: '^(\s*)worker_connections.*'
+        line: '\1worker_connections 2048;'
+        backrefs: yes
+        backup: yes
+      when: enable_nginx_optimization | default(false)
+      notify: restart nginx
+      tags: nginx-optimization
+
+    # Configure HTTP block optimizations (only unique directives)
+    - name: Configure optimized Nginx HTTP configuration
+      blockinfile:
+        path: /etc/nginx/nginx.conf
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - HTTP Performance"
+        insertafter: "http {"
+        block: |
+          # Ultimate Performance optimizations (unique directives only)
+          keepalive_requests 1000;
+          
+          # Enhanced Gzip compression
+          gzip_vary on;
+          gzip_min_length 1000;
+          gzip_comp_level 6;
+          gzip_types
+              text/plain
+              text/css
+              text/xml
+              text/javascript
+              application/javascript
+              application/json
+              application/xml+rss
+              application/atom+xml
+              image/svg+xml;
+          
+          # Buffer sizes
+          client_body_buffer_size 128k;
+          client_max_body_size 64m;
+          client_header_buffer_size 1k;
+          large_client_header_buffers 4 4k;
+          
+          # Timeouts
+          client_body_timeout 12;
+          client_header_timeout 12;
+          send_timeout 10;
+          
+          # Cache for file handles
+          open_file_cache max=200000 inactive=20s;
+          open_file_cache_valid 30s;
+          open_file_cache_min_uses 2;
+          open_file_cache_errors on;
+        backup: yes
+      when: enable_nginx_optimization | default(false)
+      notify: restart nginx
+      tags: nginx-optimization
+
+    - name: Create Nginx cache directory
+      file:
+        path: /var/cache/nginx/fastcgi
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+      when: enable_nginx_optimization | default(false)
+      tags: nginx-optimization
+
+    - name: Display Nginx optimization status
+      debug:
+        msg: "Nginx performance optimization {{ 'ENABLED' if enable_nginx_optimization | default(false) else 'DISABLED' }}"
+      tags: nginx-optimization
+
   handlers:
     - name: restart nginx
       service:
@@ -351,4 +571,9 @@
     - name: restart mysql
       service:
         name: "{{ mysql_service }}"
+        state: restarted
+
+    - name: restart redis
+      service:
+        name: redis-server
         state: restarted

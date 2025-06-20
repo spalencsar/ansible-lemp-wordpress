@@ -108,12 +108,13 @@ When using this project, please follow these security best practices:
 
 This project includes several security features:
 
-- **Fail2Ban integration** for intrusion prevention
-- **SSL/HTTPS support** with Let's Encrypt
+- **SSL/HTTPS support** with modern TLS configuration (TLS 1.2/1.3)
+- **Nginx security headers** (X-Frame-Options, X-XSS-Protection, X-Content-Type-Options, etc.)
+- **HSTS (HTTP Strict Transport Security)** for SSL-enabled deployments
 - **Secure WordPress configurations** out of the box
-- **Database security hardening**
-- **Nginx security headers** and configurations
-- **File permission hardening**
+- **Database security hardening** with user privilege restrictions
+- **File permission hardening** for WordPress files and directories
+- **Strong SSL cipher suites** and secure session handling
 
 ## Contributing to Security
 

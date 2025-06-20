@@ -42,46 +42,55 @@ ssh deployer@your-server.com
 
 ### 2. Clone and Configure
 
+### 2. Clone and Configure
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/ansible-lemp-wordpress.git
 cd ansible-lemp-wordpress
 
-# Create your inventory
-cp inventory/production.example inventory/production.ini
+# Create your inventory from template
+cp inventory/production.yml.example inventory/production.yml
 ```
 
 ### 3. Edit Inventory Configuration
 
-Edit `inventory/production.ini`:
+Edit `inventory/production.yml`:
 
-```ini
-[webservers]
-your-domain.com ansible_user=deployer ansible_ssh_private_key_file=~/.ssh/id_ed25519
-
-[webservers:vars]
-# WordPress Configuration
-wp_admin_user=admin
-wp_admin_password=your_very_secure_password_here
-wp_admin_email=admin@your-domain.com
-wp_site_title=Your WordPress Site
-wp_site_url=https://your-domain.com
-
-# Database Configuration  
-mysql_root_password=extremely_secure_root_password
-wordpress_db_name=wordpress_prod
-wordpress_db_user=wp_prod_user
-wordpress_db_password=secure_database_password
-
-# SSL Configuration
-enable_ssl=true
-ssl_email=admin@your-domain.com
+```yaml
+wordpress_servers:
+  hosts:
+    your-domain.com:
+      ansible_host: YOUR_SERVER_IP
+      ansible_user: deployer
+      # ansible_ssh_private_key_file: ~/.ssh/id_ed25519  # Use SSH keys
+      domain_name: your-domain.com
+      
+      # SSL Configuration
+      ssl_enabled: true
+      ssl_email: admin@your-domain.com
+      
+      # WordPress Database (CHANGE THESE!)
+      mysql_root_password: "CHANGE_ME_ROOT_PASSWORD"
+      wordpress_db_name: "wordpress"
+      wordpress_db_user: "wp_user"
+      wordpress_db_password: "CHANGE_ME_WP_PASSWORD"
+      
+      # WordPress Admin (CHANGE THESE!)
+      wp_admin_user: "admin"
+      wp_admin_password: "CHANGE_ME_ADMIN_PASSWORD"
+      wp_admin_email: "admin@your-domain.com"
+      wp_site_title: "Your WordPress Site"
+      
+      # Ultimate Performance Features (for Ultimate playbook)
+      enable_redis: true
+      enable_opcache: true
 ```
 
 ### 4. Test Connection
 
 ```bash
-ansible -i inventory/production.ini webservers -m ping
+ansible -i inventory/production.yml wordpress_servers -m ping
 ```
 
 Expected output:
@@ -92,10 +101,16 @@ your-domain.com | SUCCESS => {
 }
 ```
 
-### 5. Deploy LEMP Stack
+### 5. Choose Your Deployment Mode
 
+#### Option A: Basic LEMP Stack
 ```bash
-ansible-playbook -i inventory/production.ini playbooks/lemp-wordpress.yml
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress.yml
+```
+
+#### Option B: Ultimate Performance Stack
+```bash
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.yml
 ```
 
 This will:
@@ -242,7 +257,7 @@ sudo -u www-data wp db check --allow-root
 For high-traffic sites, consider:
 - Load balancer (Nginx or HAProxy)
 - Database replication or clustering
-- Redis/Memcached for object caching
+- Redis for object caching
 - CDN for static assets
 
 ### Performance Optimization

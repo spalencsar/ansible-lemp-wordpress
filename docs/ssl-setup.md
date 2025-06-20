@@ -1,23 +1,49 @@
 # SSL/HTTPS Setup Guide
 
-This guide explains how to set up SSL certificates for your WordPress installation.
+This guide explains how to set up SSL certificates for your WordPress installation using the integrated SSL support.
 
-## Let's Encrypt with Certbot
+## Automatic SSL Setup (Recommended)
 
 ### Prerequisites
 - Domain name pointing to your server
 - Ports 80 and 443 open in firewall
-- Nginx already configured and running
+- Valid email address for Let's Encrypt
 
-### Automatic SSL Setup
+### Method 1: Enable SSL in Inventory
 
-The playbook includes an optional SSL setup that uses Let's Encrypt:
+Edit your `inventory/production.yml`:
 
-```bash
-ansible-playbook -i inventory/production playbooks/lemp-wordpress.yml -e enable_ssl=true -e domain_name=yourdomain.com
+```yaml
+wordpress_servers:
+  hosts:
+    your-domain.com:
+      # ... other settings ...
+      
+      # SSL Configuration
+      ssl_enabled: true                    # Enable SSL
+      ssl_email: admin@your-domain.com     # Required for Let's Encrypt
+      domain_name: your-domain.com         # Your domain
 ```
 
-### Manual SSL Setup
+Deploy with SSL:
+```bash
+# Basic LEMP with SSL
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress.yml
+
+# Ultimate Performance with SSL  
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.yml
+```
+
+### Method 2: Enable SSL via Command Line
+
+```bash
+# Enable SSL during deployment
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress.yml \
+  -e "ssl_enabled=true" \
+  -e "ssl_email=admin@your-domain.com"
+```
+
+## Manual SSL Setup
 
 If you prefer manual setup or have your own certificates:
 

@@ -36,14 +36,15 @@ jobs:
             nav: [
               { text: 'Home', link: '/' },
               { text: 'Guide', link: '/docs/' },
-              { text: 'GitHub', link: 'https://github.com/username/ansible-lemp-wordpress' }
+              { text: 'GitHub', link: 'https://github.com/spalencsar/ansible-lemp-wordpress' }
             ],
             sidebar: [
               '/',
               '/docs/production-deployment',
               '/docs/ssl-setup',
               '/docs/troubleshooting',
-              '/docs/contributing'
+              '/docs/vault',
+              '/docs/multi-environment-deployment'
             ]
           }
         }

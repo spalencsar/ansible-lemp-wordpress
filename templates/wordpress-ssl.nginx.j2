@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name {{ domain_name }}{% if www_redirect %} www.{{ domain_name }}{% endif %};
+    server_name {{ domain_name }}{% if enable_www_redirect | default(false) %} www.{{ domain_name }}{% endif %};
     
     # Redirect HTTP to HTTPS
     return 301 https://$server_name$request_uri;
@@ -8,14 +8,14 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name {{ domain_name }}{% if www_redirect %} www.{{ domain_name }}{% endif %};
+    server_name {{ domain_name }}{% if enable_www_redirect | default(false) %} www.{{ domain_name }}{% endif %};
     
-    root {{ wordpress_path }};
+    root {{ web_root | default('/var/www/html') }};
     index index.php index.html index.htm;
     
     # SSL Configuration
-    ssl_certificate {{ ssl_certificate_path }};
-    ssl_certificate_key {{ ssl_certificate_key_path }};
+    ssl_certificate {{ ssl_cert_path | default('/etc/ssl/certs/nginx-selfsigned.crt') }};
+    ssl_certificate_key {{ ssl_cert_key_path | default('/etc/ssl/private/nginx-selfsigned.key') }};
     
     # Modern SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -33,12 +33,12 @@ server {
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     
-    # OCSP Stapling
-    ssl_stapling on;
-    ssl_stapling_verify on;
-    ssl_trusted_certificate {{ ssl_certificate_path }};
-    resolver 8.8.8.8 8.8.4.4 valid=300s;
-    resolver_timeout 5s;
+    # OCSP Stapling (disabled for self-signed certificates)
+    # ssl_stapling on;
+    # ssl_stapling_verify on;
+    # ssl_trusted_certificate {{ ssl_cert_path | default('/etc/ssl/certs/nginx-selfsigned.crt') }};
+    # resolver 8.8.8.8 8.8.4.4 valid=300s;
+    # resolver_timeout 5s;
     
     # WordPress specific rules
     location / {
@@ -63,8 +63,7 @@ server {
     
     # WordPress security
     location ~ ^/(wp-admin|wp-login\.php) {
-        # Rate limiting for admin
-        limit_req zone=admin burst=5 nodelay;
+        # Admin area protection (rate limiting disabled for compatibility)
         
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:{{ php_fpm_socket }};

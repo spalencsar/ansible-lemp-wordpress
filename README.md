@@ -1,6 +1,6 @@
 # Ansible LEMP WordPress Automation
 
-🚀 **Fully automated LEMP stack (Linux, Nginx, MySQL, PHP) + WordPress deployment using Ansible**
+🚀 **Production-ready, fully automated LEMP stack (Linux, Nginx, MySQL, PHP) + WordPress deployment using Ansible**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20|%2022.04%20|%2024.04-orange)](https://ubuntu.com/)
@@ -10,52 +10,46 @@
 
 ## 🌐 Other Languages
 
-- [🇩🇪 Deutsch](README.de.md)
-- [🇭🇺 Magyar](README.hu.md)
+- [🇩🇪 Deutsch](docs/README.de.md)
+- [🇭🇺 Magyar](docs/README.hu.md)
 
 ## 🎯 Features
 
-### Core Infrastructure
+### 🏗️ Core Infrastructure
 ✅ **Complete LEMP Stack Installation**
-- Nginx web server with optimized configuration
-- MySQL 8.0+ with secure setup  
-- PHP 8.3+ with FPM and WordPress extensions
+- Nginx web server with production-ready optimization
+- MySQL 8.0+ with secure setup and performance tuning
+- PHP 8.3+ with FPM, OPcache and WordPress extensions
 - Ubuntu/Debian family support (20.04, 22.04, 24.04, Debian 11, 12)
 
-### WordPress & Security
-✅ **WordPress Automation**
-- Latest WordPress installation via official WP-CLI
-- Automatic database setup and configuration
-- SSL/HTTPS with Let's Encrypt integration
-- Security hardening (Fail2Ban, secure configurations)
+### 🛡️ WordPress & Security
+✅ **WordPress Automation & Security**
+- Latest WordPress installation with WP-CLI integration
+- Automatic database setup and secure configuration
+- **Integrated SSL/HTTPS support** with Let's Encrypt
+- Security hardening (proper file permissions, secure configurations)
 
-### Performance & Monitoring
-✅ **Performance Optimizations**
-- Redis/Memcached caching support
-- PHP OPcache configuration
-- MySQL performance tuning
-- Automated backup system with retention
+### ⚡ Performance & Caching
+✅ **Ultimate Performance Optimizations**
+- **Redis object caching** for database optimization
+- **PHP OPcache** configuration for improved performance
+- **MySQL performance tuning** with optimized configurations
+- **Nginx optimization** with gzip, caching headers and worker tuning
 
-### Development & DevOps
+### 🔧 Production Features
 ✅ **Production & Development Ready**
-- Docker testing environment included
-- GitHub Actions CI/CD pipeline
-- Multi-environment support (Docker, VMs, bare metal)
-- WordPress Multisite support
-
-### Documentation & Support
-✅ **Developer Friendly**
-- Comprehensive documentation and guides
-- Troubleshooting guide with common solutions
-- Contributing guidelines for open source collaboration
-- Idempotent playbooks (safe to run multiple times)
+- **Two deployment modes**: Basic LEMP + Ultimate Performance
+- Docker testing environment for safe testing
+- **Modular, clean architecture** - production-tested and documented
+- **Idempotent playbooks** (safe to run multiple times)
+- **SSL support integrated** in both deployment modes
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - **Control Machine**: Ansible 6.0+ installed
-- **Target Server**: Ubuntu 24.04+ with SSH access and sudo privileges
+- **Target Server**: Ubuntu 20.04+ or Debian 11+ with SSH access and sudo privileges
 - **Network**: SSH access (port 22) and web access (ports 80/443)
 
 ### 1. Clone Repository
@@ -68,25 +62,40 @@ cd ansible-lemp-wordpress
 ### 2. Configure Inventory
 
 ```bash
-cp inventory/production.example inventory/production.ini
-# Edit inventory/production.ini with your server details
+cp inventory/production.yml.example inventory/production.yml
+# Edit inventory/production.yml with your server details
 ```
 
-### 3. Deploy WordPress
+### 3. Choose Your Deployment Mode
 
+#### Option A: Basic LEMP + WordPress
 ```bash
-# Install LEMP stack
-ansible-playbook -i inventory/production.ini playbooks/lemp-wordpress.yml
-
-# Install WordPress with WP-CLI
-ansible-playbook -i inventory/production.ini playbooks/install-wordpress-official.yml
+# Standard LEMP stack with WordPress
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress.yml
 ```
 
-### 4. Access Your Site
+#### Option B: Ultimate Performance Setup
+```bash
+# LEMP + WordPress + Redis + OPcache + Nginx optimization
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.yml
+```
 
-- **Website**: `http://your-server-ip`
+#### Option C: With SSL/HTTPS
+```bash
+# Enable SSL during deployment
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress.yml \
+  -e "ssl_enabled=true" -e "ssl_email=your-email@domain.com"
+
+# Or with Ultimate Performance + SSL
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.yml \
+  -e "ssl_enabled=true" -e "ssl_email=your-email@domain.com"
+```
+
+### 4. Access Your WordPress Site
+
+- **Website**: `http://your-server-ip` (or `https://` if SSL enabled)
 - **Admin Panel**: `http://your-server-ip/wp-admin`
-- **Default Login**: admin / admin123 (change immediately!)
+- **Default Login**: Check your inventory file for `wp_admin_user` and `wp_admin_password`
 
 ## 🐳 Docker Testing Environment
 
@@ -95,8 +104,12 @@ Perfect for testing before deploying to production servers:
 ```bash
 cd docker/
 docker-compose up -d
-ansible-playbook -i inventory/docker.ini playbooks/lemp-wordpress.yml
-ansible-playbook -i inventory/docker.ini playbooks/install-wordpress-official.yml
+
+# Test Basic LEMP deployment
+ansible-playbook -i inventory/docker.yml playbooks/lemp-wordpress.yml
+
+# Test Ultimate Performance deployment
+ansible-playbook -i inventory/docker.yml playbooks/lemp-wordpress-ultimate.yml
 ```
 
 Access test site: http://localhost:8080
@@ -105,24 +118,25 @@ Access test site: http://localhost:8080
 
 ```
 ansible-lemp-wordpress/
-├── playbooks/              # Main Ansible playbooks
-│   ├── lemp-wordpress.yml       # LEMP stack installation
-│   └── install-wordpress-official.yml  # WordPress setup with WP-CLI
-├── inventory/              # Server inventory examples
-│   ├── production.example      # Production server template
-│   ├── staging.example         # Staging server template
-│   └── docker.ini             # Docker test environment
-├── templates/              # Configuration templates
-│   ├── wp-config.php.j2       # WordPress configuration
-│   └── wordpress.nginx.j2     # Nginx virtual host
-├── vars/                   # Variable files for different OS
-│   ├── ubuntu.yml             # Ubuntu-specific variables
-│   └── debian.yml             # Debian-specific variables
-├── docker/                 # Docker testing environment
-│   ├── docker-compose.yml     # Docker setup
-│   ├── Dockerfile             # Ubuntu container
-│   └── start-services.sh      # Service startup script
-└── docs/                   # Documentation
+├── playbooks/                    # Main Ansible playbooks (PRODUCTION-READY)
+│   ├── lemp-wordpress.yml           # Basic LEMP + WordPress deployment
+│   └── lemp-wordpress-ultimate.yml  # Ultimate: LEMP + WordPress + Redis + OPcache + Optimization
+├── inventory/                    # Server inventory configurations
+│   ├── production.yml               # Production server configuration
+│   └── docker.yml                   # Docker test environment
+├── templates/                    # Jinja2 configuration templates (PRODUCTION-TESTED)
+│   ├── wp-config.php.j2            # WordPress configuration
+│   ├── wordpress.nginx.j2          # Nginx virtual host (HTTP)
+│   ├── wordpress-ssl.nginx.j2      # Nginx virtual host (HTTPS)
+│   ├── my.cnf.j2                   # MySQL configuration
+│   └── www.conf.j2                 # PHP-FPM pool configuration
+├── vars/                        # OS-specific variables
+│   └── debian-family.yml           # Debian/Ubuntu variables
+├── docker/                      # Docker testing environment
+│   ├── docker-compose.yml          # Docker setup
+│   ├── Dockerfile                  # Ubuntu test container
+│   └── start-services.sh           # Service startup script
+└── docs/                        # Documentation
     ├── production-deployment.md
     ├── ssl-setup.md
     └── troubleshooting.md
@@ -130,127 +144,164 @@ ansible-lemp-wordpress/
 
 ## ⚙️ Configuration
 
+### Deployment Modes
+
+**Basic LEMP Mode** (`lemp-wordpress.yml`)
+- Standard LEMP stack (Nginx, MySQL, PHP)
+- WordPress with WP-CLI
+- SSL support (optional)
+- Suitable for small to medium sites
+
+**Ultimate Performance Mode** (`lemp-wordpress-ultimate.yml`) 
+- Everything from Basic mode, plus:
+- Redis object caching
+- PHP OPcache optimization
+- Nginx performance tuning
+- MySQL optimization
+- Suitable for high-traffic sites
+
+### SSL Configuration
+
+Both deployment modes support SSL:
+
+```yaml
+# In inventory/production.yml
+wordpress_servers:
+  hosts:
+    your-server:
+      ansible_host: your-ip
+      ssl_enabled: true
+      ssl_email: your-email@domain.com
+```
+
+### Variable Configuration
+
+**Essential WordPress Variables:**
+```yaml
+# WordPress Admin
+wp_admin_user: admin              # WordPress admin username
+wp_admin_password: "{{ vault_wp_admin_password }}"  # Use Ansible Vault!
+wp_admin_email: admin@domain.com  # WordPress admin email
+wp_site_title: "My WordPress Site"
+
+# Database
+mysql_root_password: "{{ vault_mysql_root_password }}"    # Use Ansible Vault!
+wordpress_db_name: wordpress
+wordpress_db_user: wordpress
+wordpress_db_password: "{{ vault_wordpress_db_password }}" # Use Ansible Vault!
+
+# SSL (optional)
+ssl_enabled: false
+ssl_email: admin@domain.com
+```
+
+**Performance Variables (Ultimate Mode):**
+```yaml
+# Redis Configuration
+redis_enabled: true
+redis_maxmemory: 256mb
+
+# PHP Optimization
+php_memory_limit: 512M
+php_upload_max_filesize: 128M
+php_opcache_enabled: true
+
+# Nginx Optimization
+nginx_worker_processes: auto
+nginx_optimization_enabled: true
+```
 ### Server Requirements
 
-- **OS**: Ubuntu 20.04+, Debian 11+
-- **RAM**: Minimum 1GB (2GB+ recommended)
+- **OS**: Ubuntu 20.04+ or Debian 11+
+- **RAM**: Minimum 1GB (2GB+ recommended for Ultimate mode)
 - **Storage**: Minimum 10GB free space
 - **Network**: SSH access + web ports (80/443)
 
-### Customization
+## 🔒 Security & Best Practices
 
-Edit variables in your inventory file:
+### Security Features
+- **Secure password handling** with Ansible Vault
+- **Proper file permissions** for WordPress and system files
+- **MySQL security** with custom root password and restricted access
+- **Nginx security headers** and configuration hardening
+- **SSL/HTTPS support** with Let's Encrypt integration
 
-```ini
-[webservers]
-your-server.com ansible_user=ubuntu
+### Best Practices
+```bash
+# Use Ansible Vault for sensitive data
+ansible-vault create inventory/group_vars/all/vault.yml
 
-[webservers:vars]
-# WordPress Configuration
-wp_admin_user=admin
-wp_admin_email=admin@yoursite.com
-wp_site_title="My WordPress Site"
-wp_site_url="https://yoursite.com"
+# Example vault.yml content:
+vault_mysql_root_password: "your-secure-mysql-password"
+vault_wp_admin_password: "your-secure-wp-password"
+vault_wordpress_db_password: "your-secure-db-password"
 
-# Database Configuration
-mysql_root_password=your_secure_password
-wordpress_db_name=wordpress
-wordpress_db_user=wp_user
-wordpress_db_password=another_secure_password
-
-# SSL Configuration (optional)
-enable_ssl=true
-ssl_email=admin@yoursite.com
+# Deploy with vault
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress.yml --ask-vault-pass
 ```
-
-## 🔒 Security Features
-
-- Secure MySQL installation with custom root password
-- WordPress security keys auto-generation
-- Proper file permissions and ownership
-- Nginx security headers
-- PHP security hardening
-- Firewall configuration ready
 
 ## 🧪 Testing
 
-### Automated Testing
+### Pre-deployment Testing
 ```bash
-# Run integration tests
-./tests/integration-test.sh
+# Test with Docker first
+cd docker/
+docker-compose up -d
+ansible-playbook -i inventory/docker.yml playbooks/lemp-wordpress.yml
 
-# Validate inventory files
-./tests/validate-inventory.py inventory/production.example
-
-# Lint Ansible playbooks
-ansible-lint playbooks/*.yml
-
-# Validate YAML syntax
-yamllint .
+# Access test environment
+curl -I http://localhost:8080/
 ```
 
-### Manual Testing
+### Validation Commands
 ```bash
-# Test basic WordPress functionality
-curl -I http://your-server/
+# Check WordPress installation
 curl -s http://your-server/ | grep "WordPress"
 
 # Test admin access
 curl -I http://your-server/wp-admin/
 
-# Test WP-CLI
-ansible all -i inventory/production -m shell -a "cd /var/www/html && wp core version"
+# Check PHP version
+ansible all -i inventory/production.yml -m shell -a "php --version"
+
+# Test MySQL connection
+ansible all -i inventory/production.yml -m shell -a "mysql -u root -p{{ vault_mysql_root_password }} -e 'SELECT VERSION();'"
 ```
 
 ## 🔒 Security
 
-This project includes several security features:
-- **Fail2Ban integration** for intrusion prevention
-- **SSL/HTTPS support** with Let's Encrypt
-- **Security headers** and Nginx hardening
-- **Database security** with proper user permissions
-- **File permission hardening**
+## 🚀 Performance Features
 
-See [SECURITY.md](SECURITY.md) for detailed security information.
+### Basic Mode Performance
+- **PHP-FPM optimization** with tuned pool configuration
+- **MySQL optimization** with production-ready settings
+- **Nginx optimization** with gzip compression and caching headers
 
-## 📊 Performance Features
-
-- **FastCGI Caching** with Nginx for ultra-fast page loads
+### Ultimate Mode Performance  
+Everything from Basic mode, plus:
 - **Redis Object Caching** for database query optimization
-- **PHP OPcache** for improved PHP performance
-- **System-level optimizations** (kernel parameters, limits)
-- **Automated performance monitoring** with alerts
-- **Database optimization** scripts with scheduled cleanup
-- **Cache warming** for consistent performance
+- **PHP OPcache** for bytecode caching and improved PHP performance
+- **Advanced Nginx tuning** with worker optimization and connection handling
+- **MySQL performance tuning** with enhanced configurations
 
-## 🚀 **Performance Optimization** (NEW!)
+### Performance Comparison
 ```bash
-# Ultimate performance optimization
-ansible-playbook -i inventory/production playbooks/ultimate-performance-optimization.yml \
-  -e enable_redis=true -e enable_performance_monitoring=true
+# Deploy Basic mode
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress.yml
 
-# Advanced features with performance
-ansible-playbook -i inventory/production playbooks/wordpress-advanced-features.yml \
-  -e enable_redis=true -e enable_memcached=true -e enable_opcache=true
+# Deploy Ultimate mode for high-traffic sites
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.yml
 ```
 
-### 📊 **Enterprise Features**
-- **Multi-environment testing** (Docker, VM, bare metal)
-- **Performance monitoring** with automated alerts
-- **Log management** with rotation and cleanup
-- **Security hardening** with Fail2Ban and headers
-- **Backup automation** with retention policies
-- **Health checks** and self-healing capabilities
+## 🌍 OS Compatibility
 
-## 🌍 Ubuntu/Debian Support
-
-| OS | Version | Status |
-|---|---|---|
-| Ubuntu | 24.04 LTS | ✅ Fully Tested |
-| Ubuntu | 22.04 LTS | ✅ Supported |
-| Ubuntu | 20.04 LTS | ✅ Supported |
-| Debian | 12 | ✅ Supported |
-| Debian | 11 | ✅ Supported |
+| OS | Version | Status | Notes |
+|---|---|---|---|
+| Ubuntu | 24.04 LTS | ✅ Fully Tested | Recommended |
+| Ubuntu | 22.04 LTS | ✅ Fully Tested | Recommended |
+| Ubuntu | 20.04 LTS | ✅ Supported | Tested |
+| Debian | 12 | ✅ Supported | Compatible |
+| Debian | 11 | ✅ Supported | Compatible |
 
 ## 📚 Documentation
 

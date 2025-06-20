@@ -29,6 +29,7 @@ package_manager: apt
 php_fpm_config_path: /etc/php/8.3/fpm
 php_cli_config_path: /etc/php/8.3/cli
 php_fpm_pool_path: /etc/php/8.3/fpm/pool.d
+php_fpm_socket: /run/php/php8.3-fpm.sock
 
 # Nginx paths
 nginx_config_path: /etc/nginx
@@ -37,9 +38,23 @@ nginx_sites_enabled: /etc/nginx/sites-enabled
 
 # MySQL paths
 mysql_config_path: /etc/mysql
+mysql_socket: /var/run/mysqld/mysqld.sock
+mysql_pid_file: /var/run/mysqld/mysqld.pid
+mysql_log_error: /var/log/mysql/error.log
+
+# Nginx User
+nginx_user: www-data
 
 # Default PHP version
 php_version: "8.3"
 
 # System paths
 web_root: /var/www/html
+
+# SSL Configuration (optional)
+ssl_cert_path: /etc/ssl/certs/nginx-selfsigned.crt
+ssl_cert_key_path: /etc/ssl/private/nginx-selfsigned.key
+
+# Additional Variables for Templates
+enable_www_redirect: false
+enable_nginx_cache: false

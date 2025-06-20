@@ -2,52 +2,71 @@
 
 Common issues and their solutions when using the LEMP WordPress automation.
 
-## Installation Issues
+## Connection Issues
 
 ### Ansible Connection Problems
 
 **SSH Connection Refused:**
 ```bash
-# Check if SSH service is running
+# Check if SSH service is running on target server
 sudo systemctl status ssh
 sudo systemctl start ssh
 
 # Verify SSH port (default 22)
 sudo netstat -tlnp | grep :22
+
+# Test connection manually
+ssh your_user@your_server_ip
 ```
 
 **Permission Denied (publickey):**
 ```bash
-# Use password authentication temporarily
-ansible-playbook -i inventory/production playbooks/lemp-wordpress.yml --ask-pass
+# Use password authentication (if enabled in inventory)
+ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress.yml
 
-# Or set up SSH keys
-ssh-copy-id username@your-server
+# Or set up SSH keys (recommended)
+ssh-keygen -t ed25519 -C "your-email@example.com"
+ssh-copy-id your_user@your_server_ip
+
+# Test SSH connection
+ssh your_user@your_server_ip
 ```
 
 **Host Key Verification Failed:**
 ```bash
 # Remove old host key
-ssh-keygen -R your-server-ip
+ssh-keygen -R your_server_ip
 
-# Or disable host key checking temporarily
+# Or disable host key checking temporarily (not recommended for production)
 export ANSIBLE_HOST_KEY_CHECKING=False
 ```
+
+**Inventory File Syntax Error:**
+```bash
+# Validate inventory syntax
+ansible-inventory -i inventory/production.yml --list
+
+# Test connection to all hosts
+ansible -i inventory/production.yml wordpress_servers -m ping
+```
+
+## Deployment Issues
 
 ### Package Installation Failures
 
 **Package Not Found:**
 ```bash
-# Update package cache first
+# Update package cache on target server
 sudo apt update
 
 # Check if universe repository is enabled (Ubuntu)
 sudo add-apt-repository universe
+sudo apt update
 ```
 
 **Lock Error (dpkg/apt):**
 ```bash
-# Kill any running package managers
+# Kill any running package managers on target server
 sudo killall apt apt-get dpkg
 
 # Remove locks
@@ -78,57 +97,123 @@ sudo journalctl -u nginx -f
 
 **403 Forbidden Error:**
 ```bash
-# Check file permissions
-ls -la /var/www/html/
+### WordPress Issues
+
+**WordPress Installation Fails:**
+```bash
+# Check if WP-CLI is installed
+wp --info
+
+# Check WordPress directory permissions
+ls -la /var/www/html/ 
 sudo chown -R www-data:www-data /var/www/html/
 sudo chmod -R 755 /var/www/html/
 
-# Check Nginx user in config
-grep user /etc/nginx/nginx.conf
+# Verify wp-config.php
+cat /var/www/html/wp-config.php
 ```
 
-### MySQL/MariaDB Issues
-
-**MySQL Won't Start:**
+**Database Connection Error:**
 ```bash
-# Check MySQL status and logs
-sudo systemctl status mysql
-sudo journalctl -u mysql -f
+# Test database connection from WordPress
+mysql -u wp_user -p wordpress
 
-# Check disk space
-df -h
+# Check credentials in wp-config.php match inventory
+grep DB_ /var/www/html/wp-config.php
 
-# Reset MySQL if corrupted
-sudo systemctl stop mysql
-sudo mysqld_safe --skip-grant-tables &
+# Verify database user exists
+mysql -u root -p -e "SELECT user,host FROM mysql.user WHERE user='wp_user';"
 ```
 
-**Can't Connect to Database:**
-```bash
-# Test MySQL connection
-mysql -u root -p
-mysql -u wordpress_user -p wordpress_db
+### SSL/HTTPS Issues
 
-# Check user privileges
-mysql -u root -p -e "SELECT user,host FROM mysql.user;"
-mysql -u root -p -e "SHOW GRANTS FOR 'wordpress_user'@'localhost';"
+**SSL Certificate Generation Fails:**
+```bash
+# Check if domain points to server
+nslookup your-domain.com
+
+# Verify firewall allows HTTP/HTTPS
+sudo ufw status
+sudo ufw allow 80
+sudo ufw allow 443
+
+# Check if ports are accessible
+curl -I http://your-domain.com
 ```
 
-**Access Denied for User:**
+**Mixed Content Warnings:**
 ```bash
-# Reset WordPress database user
-mysql -u root -p
-DROP USER IF EXISTS 'wordpress_user'@'localhost';
-CREATE USER 'wordpress_user'@'localhost' IDENTIFIED BY 'your_password';
-GRANT ALL PRIVILEGES ON wordpress_db.* TO 'wordpress_user'@'localhost';
-FLUSH PRIVILEGES;
+# Update WordPress URLs in database
+mysql -u root -p wordpress -e "UPDATE wp_options SET option_value = 'https://your-domain.com' WHERE option_name = 'home';"
+mysql -u root -p wordpress -e "UPDATE wp_options SET option_value = 'https://your-domain.com' WHERE option_name = 'siteurl';"
+
+# Or use WP-CLI
+wp search-replace 'http://your-domain.com' 'https://your-domain.com' --dry-run
+wp search-replace 'http://your-domain.com' 'https://your-domain.com'
 ```
 
-### PHP-FPM Issues
+## Performance Issues (Ultimate Mode)
 
-**PHP-FPM Not Working:**
+### Redis Issues
+
+**Redis Not Working:**
 ```bash
-# Check PHP-FPM status
+# Check Redis status
+sudo systemctl status redis-server
+
+# Test Redis connection
+redis-cli ping
+
+# Check Redis configuration
+sudo cat /etc/redis/redis.conf | grep -v "^#" | grep -v "^$"
+```
+
+**WordPress Not Using Redis:**
+```bash
+# Check if Redis object cache plugin is active
+wp plugin list --status=active
+
+# Verify Redis cache is working
+redis-cli monitor
+# Then browse your WordPress site and watch for Redis activity
+```
+
+### PHP OPcache Issues
+
+**OPcache Not Working:**
+```bash
+# Check if OPcache is loaded
+php -m | grep -i opcache
+
+# Check OPcache status
+php -r "print_r(opcache_get_status());"
+
+# Check PHP configuration
+php --ini
+grep opcache /etc/php/*/fpm/php.ini
+```
+
+## Service Management
+
+### Restart All Services
+```bash
+# Restart all LEMP services
+sudo systemctl restart nginx
+sudo systemctl restart mysql  
+sudo systemctl restart php8.3-fpm
+
+# For Ultimate mode, also restart Redis
+sudo systemctl restart redis-server
+```
+
+### Check Service Status
+```bash
+# Check all service statuses
+sudo systemctl status nginx mysql php8.3-fpm
+
+# For Ultimate mode
+sudo systemctl status redis-server
+```
 sudo systemctl status php8.3-fpm
 
 # Check socket file
