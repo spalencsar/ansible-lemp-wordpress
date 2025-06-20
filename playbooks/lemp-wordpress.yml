@@ -44,14 +44,17 @@
 
     - name: Set deployment environment (auto-detect or override)
       set_fact:
-        deployment_environment: "{{ deployment_environment | default('docker' if docker_env.stat.exists else 'bare_metal') }}"
+        deployment_environment: >-
+          {{ deployment_environment | default('docker' if docker_env.stat.exists else 'bare_metal') }}
       tags: always
 
     - name: Set WordPress site URL with smart defaults
       set_fact:
         wp_site_url: "{{ wp_site_url | default(_auto_wp_url) }}"
       vars:
-        _auto_wp_url: "{{ 'http://localhost:8080' if (deployment_environment == 'docker') else 'http://' + (ansible_default_ipv4.address | default('localhost')) }}"
+        _auto_wp_url: >-
+          {{ 'http://localhost:8080' if (deployment_environment == 'docker')
+             else 'http://' + (ansible_default_ipv4.address | default('localhost')) }}
       tags: always
 
     - name: Debug deployment configuration
@@ -223,7 +226,7 @@
         -keyout {{ ssl_cert_key_path | default('/etc/ssl/private/nginx-selfsigned.key') }}
         -out {{ ssl_cert_path | default('/etc/ssl/certs/nginx-selfsigned.crt') }}
         -subj "/C=DE/ST=State/L=City/O=Organization/OU=OrgUnit/CN={{ domain_name }}"
-      when: 
+      when:
         - ssl_enabled | default(false)
         - not (ssl_cert_path is defined and ssl_cert_key_path is defined)
       tags: ssl
@@ -231,7 +234,9 @@
     # Nginx Configuration
     - name: Configure Nginx for WordPress
       template:
-        src: ../templates/{% if ssl_enabled | default(false) %}wordpress-ssl.nginx.j2{% else %}wordpress.nginx.j2{% endif %}
+        src: >-
+          ../templates/{% if ssl_enabled | default(false) %}wordpress-ssl.nginx.j2{%
+          else %}wordpress.nginx.j2{% endif %}
         dest: "{{ nginx_sites_available }}/wordpress"
       notify: restart nginx
       tags: nginx

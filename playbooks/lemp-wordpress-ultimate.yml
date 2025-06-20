@@ -44,14 +44,17 @@
 
     - name: Set deployment environment (auto-detect or override)
       set_fact:
-        deployment_environment: "{{ deployment_environment | default('docker' if docker_env.stat.exists else 'bare_metal') }}"
+        deployment_environment: >-
+          {{ deployment_environment | default('docker' if docker_env.stat.exists else 'bare_metal') }}
       tags: always
 
     - name: Set WordPress site URL with smart defaults
       set_fact:
         wp_site_url: "{{ wp_site_url | default(_auto_wp_url) }}"
       vars:
-        _auto_wp_url: "{{ 'http://localhost:8080' if (deployment_environment == 'docker') else 'http://' + (ansible_default_ipv4.address | default('localhost')) }}"
+        _auto_wp_url: >-
+          {{ 'http://localhost:8080' if (deployment_environment == 'docker')
+             else 'http://' + (ansible_default_ipv4.address | default('localhost')) }}
       tags: always
 
     - name: Debug deployment configuration
@@ -223,7 +226,7 @@
         -keyout {{ ssl_cert_key_path | default('/etc/ssl/private/nginx-selfsigned.key') }}
         -out {{ ssl_cert_path | default('/etc/ssl/certs/nginx-selfsigned.crt') }}
         -subj "/C=DE/ST=State/L=City/O=Organization/OU=OrgUnit/CN={{ domain_name }}"
-      when: 
+      when:
         - ssl_enabled | default(false)
         - not (ssl_cert_path is defined and ssl_cert_key_path is defined)
       tags: ssl
@@ -231,7 +234,9 @@
     # Nginx Configuration
     - name: Create Nginx configuration for WordPress
       template:
-        src: ../templates/{% if ssl_enabled | default(false) %}wordpress-ssl.nginx.j2{% else %}wordpress.nginx.j2{% endif %}
+        src: >-
+          ../templates/{% if ssl_enabled | default(false) %}wordpress-ssl.nginx.j2{%
+          else %}wordpress.nginx.j2{% endif %}
         dest: "{{ nginx_sites_available }}/wordpress"
         backup: yes
       notify: restart nginx
@@ -505,7 +510,7 @@
         block: |
           # Ultimate Performance optimizations (unique directives only)
           keepalive_requests 1000;
-          
+
           # Enhanced Gzip compression
           gzip_vary on;
           gzip_min_length 1000;
@@ -520,18 +525,18 @@
               application/xml+rss
               application/atom+xml
               image/svg+xml;
-          
+
           # Buffer sizes
           client_body_buffer_size 128k;
           client_max_body_size 64m;
           client_header_buffer_size 1k;
           large_client_header_buffers 4 4k;
-          
+
           # Timeouts
           client_body_timeout 12;
           client_header_timeout 12;
           send_timeout 10;
-          
+
           # Cache for file handles
           open_file_cache max=200000 inactive=20s;
           open_file_cache_valid 30s;
@@ -554,7 +559,8 @@
 
     - name: Display Nginx optimization status
       debug:
-        msg: "Nginx performance optimization {{ 'ENABLED' if enable_nginx_optimization | default(false) else 'DISABLED' }}"
+        msg: >-
+          Nginx performance optimization {{ 'ENABLED' if enable_nginx_optimization | default(false) else 'DISABLED' }}
       tags: nginx-optimization
 
   handlers:
