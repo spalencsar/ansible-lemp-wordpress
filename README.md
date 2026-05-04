@@ -3,8 +3,8 @@
 🚀 **Production-ready, fully automated LEMP stack (Linux, Nginx, MySQL, PHP) + WordPress deployment using Ansible**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20|%2022.04%20|%2024.04-orange)](https://ubuntu.com/)
-[![Debian](https://img.shields.io/badge/Debian-11%20|%2012%20|%2013-red)](https://debian.org/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20|%2022.04%20|%2024.04%20|%2025.04-orange)](https://ubuntu.com/)
+[![Debian](https://img.shields.io/badge/Debian-11%20|%2012%20|%2013%20|%2014-red)](https://debian.org/)
 [![Ansible](https://img.shields.io/badge/Ansible-6.0+-red)](https://www.ansible.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-7.0+-blue)](https://wordpress.org/)
 
@@ -20,7 +20,7 @@
 - Nginx web server with production-ready optimization
 - MySQL 8.0+ with secure setup and performance tuning
 - PHP 8.4+ with FPM, OPcache and WordPress extensions
-- Ubuntu/Debian family support (20.04, 22.04, 24.04, Debian 11, 12)
+- Ubuntu/Debian family support (20.04, 22.04, 24.04, 25.04, Debian 11, 12, 13, 14)
 
 ### 🛡️ WordPress & Security
 ✅ **WordPress Automation & Security**

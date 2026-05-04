@@ -1,11 +1,14 @@
 name: CI/CD Pipeline
-# Updated: Removed systemd, using SSH-based testing for better stability
+# Updated: Dynamic tag for release, CodeQL v4, Node.js 24 support
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   lint:
@@ -121,7 +124,7 @@ jobs:
         output: 'trivy-results.sarif'
     
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3  # Updated to v3 to fix deprecated v2 warning
+      uses: github/codeql-action/upload-sarif@v4
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
