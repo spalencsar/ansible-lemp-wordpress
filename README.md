@@ -299,8 +299,7 @@ ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.y
 |---|---|---|---|
 | Ubuntu | 25.04 | ✅ Supported | Interim release |
 | Ubuntu | 24.04 LTS | ✅ Fully Tested | Recommended |
-| Ubuntu | 22.04 LTS | ✅ Fully Tested | Recommended |
-| Ubuntu | 20.04 LTS | ✅ Supported | Tested |
+| Ubuntu | 22.04 LTS | ✅ Supported | Legacy support |
 | Debian | 14 | 🔶 Testing | Forky (upcoming) |
 | Debian | 13 | ✅ Supported | Current stable |
 | Debian | 12 | ✅ Supported | Compatible |

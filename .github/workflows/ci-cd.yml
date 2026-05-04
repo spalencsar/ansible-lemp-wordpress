@@ -51,7 +51,7 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        ubuntu_version: ['20.04', '22.04', '24.04', '25.04']
+        ubuntu_version: ['22.04', '24.04', '25.04']
     
     steps:
     - name: Checkout code
