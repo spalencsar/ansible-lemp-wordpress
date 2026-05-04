@@ -144,7 +144,7 @@ jobs:
       id: get_tag
       run: |
         # Get the latest tag, default to v1.0.0 if none exist
-        latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+        latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v2.5.0")
         echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
         echo "Found latest tag: $latest_tag"
     
@@ -159,8 +159,8 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.1.0
-        name: Release v1.1.0 - Multilingual & Stability Improvements
+        tag_name: ${{ steps.get_tag.outputs.latest_tag }}
+        name: Release ${{ steps.get_tag.outputs.latest_tag }}
         body_path: CHANGELOG_RELEASE.md
         draft: false
         prerelease: false
