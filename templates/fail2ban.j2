@@ -1,0 +1,68 @@
+# Fail2Ban configuration for WordPress LEMP stack
+# Copy this to /etc/fail2ban/jail.local on your server
+
+[DEFAULT]
+# Global settings
+bantime  = 3600
+findtime = 600
+maxretry = 5
+
+# Your trusted IPs (never ban these)
+ignoreip = 127.0.0.1/8 ::1
+
+# Enable persistent database
+dbfile = /var/lib/fail2ban/fail2ban.sqlite3
+dbpurgeage = 86400
+
+# Incremental bans for repeat offenders
+bantime.increment = true
+bantime.multiplier = 2
+bantime.maxtime = 86400
+
+[sshd]
+# SSH brute force protection
+enabled  = true
+port     = ssh
+filter  = sshd
+maxretry = 3
+bantime = 86400
+findtime = 300
+
+[nginx-http-auth]
+# Nginx HTTP Basic Auth failures
+enabled  = true
+port     = http,https
+filter  = nginx-http-auth
+logpath  = /var/log/nginx/error.log
+maxretry = 5
+bantime = 3600
+findtime = 600
+
+[nginx-botsearch]
+# Bot scanners searching for vulnerable scripts
+enabled  = true
+port     = http,https
+filter  = nginx-botsearch
+logpath  = /var/log/nginx/access.log
+maxretry = 2
+bantime = 7200
+findtime = 300
+
+[wordpress-login]
+# WordPress wp-login.php protection
+enabled  = true
+port     = http,https
+filter  = wordpress-login
+logpath  = /var/log/nginx/access.log
+maxretry = 5
+bantime = 7200
+findtime = 600
+
+[recidive]
+# Ban repeat offenders for a week
+enabled  = true
+filter  = recidive
+logpath  = /var/log/fail2ban.log
+maxretry = 3
+bantime = 604800
+findtime = 86400

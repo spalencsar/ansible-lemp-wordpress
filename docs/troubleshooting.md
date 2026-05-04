@@ -200,7 +200,7 @@ grep opcache /etc/php/*/fpm/php.ini
 # Restart all LEMP services
 sudo systemctl restart nginx
 sudo systemctl restart mysql  
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart php{{ php_version | default('8.4') }}-fpm
 
 # For Ultimate mode, also restart Redis
 sudo systemctl restart redis-server
@@ -209,25 +209,25 @@ sudo systemctl restart redis-server
 ### Check Service Status
 ```bash
 # Check all service statuses
-sudo systemctl status nginx mysql php8.3-fpm
+sudo systemctl status nginx mysql php{{ php_version | default('8.4') }}-fpm
 
 # For Ultimate mode
 sudo systemctl status redis-server
-```
-sudo systemctl status php8.3-fpm
+
+sudo systemctl status php{{ php_version | default('8.4') }}-fpm
 
 # Check socket file
-ls -la /run/php/php8.3-fpm.sock
+ls -la /run/php/php{{ php_version | default('8.4') }}-fpm.sock
 
 # Check PHP-FPM configuration
 sudo nginx -t
-sudo php-fpm8.3 -t
+sudo php-fpm{{ php_version | default('8.4') }} -t
 ```
 
 **PHP Errors in WordPress:**
 ```bash
 # Enable PHP error logging
-sudo tail -f /var/log/php8.3-fpm.log
+sudo tail -f /var/log/php{{ php_version | default('8.4') }}-fpm.log
 
 # Check WordPress debug
 # Add to wp-config.php:
@@ -245,14 +245,14 @@ tail -f /var/www/html/wp-content/debug.log
 **White Screen of Death:**
 ```bash
 # Check PHP errors
-sudo tail -f /var/log/php8.3-fpm.log
+sudo tail -f /var/log/php{{ php_version | default('8.4') }}-fpm.log
 sudo tail -f /var/log/nginx/error.log
 
 # Increase PHP memory limit
-sudo nano /etc/php/8.3/fpm/php.ini
+sudo nano /etc/php/{{ php_version | default('8.4') }}/fpm/php.ini
 # memory_limit = 256M
 
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart php{{ php_version | default('8.4') }}-fpm
 ```
 
 **Database Connection Error:**
@@ -278,7 +278,7 @@ sudo chmod 600 /var/www/html/wp-config.php
 **Slow Website Loading:**
 ```bash
 # Enable PHP OPcache
-sudo nano /etc/php/8.3/fpm/php.ini
+sudo nano /etc/php/{{ php_version | default('8.4') }}/fpm/php.ini
 # opcache.enable=1
 # opcache.memory_consumption=128
 
@@ -344,7 +344,7 @@ Important log files for debugging:
 
 - **Nginx Access:** `/var/log/nginx/access.log`
 - **Nginx Error:** `/var/log/nginx/error.log`
-- **PHP-FPM:** `/var/log/php8.3-fpm.log`
+- **PHP-FPM:** `/var/log/php8.4-fpm.log`
 - **MySQL:** `/var/log/mysql/error.log`
 - **WordPress:** `/var/www/html/wp-content/debug.log`
 - **System:** `journalctl -f`
@@ -361,15 +361,15 @@ Important log files for debugging:
 
 ```bash
 # Restart all services
-sudo systemctl restart nginx php8.3-fpm mysql
+sudo systemctl restart nginx php{{ php_version | default('8.4') }}-fpm mysql
 
 # Check all service status
-sudo systemctl status nginx php8.3-fpm mysql
+sudo systemctl status nginx php{{ php_version | default('8.4') }}-fpm mysql
 
 # Test configurations
 sudo nginx -t
-sudo php-fpm8.3 -t
+sudo php-fpm{{ php_version | default('8.4') }} -t
 
 # Monitor logs in real-time
-sudo tail -f /var/log/nginx/error.log /var/log/php8.3-fpm.log
+sudo tail -f /var/log/nginx/error.log /var/log/php{{ php_version | default('8.4') }}-fpm.log
 ```

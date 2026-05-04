@@ -4,32 +4,33 @@
 packages:
   - nginx
   - mysql-server
-  - php8.3-fpm
-  - php8.3-mysql
-  - php8.3-curl
-  - php8.3-gd
-  - php8.3-intl
-  - php8.3-mbstring
-  - php8.3-soap
-  - php8.3-xml
-  - php8.3-xmlrpc
-  - php8.3-zip
+  - php8.4-fpm
+  - php8.4-mysql
+  - php8.4-curl
+  - php8.4-gd
+  - php8.4-intl
+  - php8.4-mbstring
+  - php8.4-soap
+  - php8.4-xml
+  - php8.4-xmlrpc
+  - php8.4-zip
   - python3-pymysql
   - unzip
+  - fail2ban
 
 # Service names
 mysql_service: mysql
 nginx_service: nginx
-php_fpm_service: php8.3-fpm
+php_fpm_service: php8.4-fpm
 
 # Package manager
 package_manager: apt
 
 # PHP paths
-php_fpm_config_path: /etc/php/8.3/fpm
-php_cli_config_path: /etc/php/8.3/cli
-php_fpm_pool_path: /etc/php/8.3/fpm/pool.d
-php_fpm_socket: /run/php/php8.3-fpm.sock
+php_fpm_config_path: /etc/php/8.4/fpm
+php_cli_config_path: /etc/php/8.4/cli
+php_fpm_pool_path: /etc/php/8.4/fpm/pool.d
+php_fpm_socket: /run/php/php8.4-fpm.sock
 
 # Nginx paths
 nginx_config_path: /etc/nginx
@@ -46,7 +47,7 @@ mysql_log_error: /var/log/mysql/error.log
 nginx_user: www-data
 
 # Default PHP version
-php_version: "8.3"
+php_version: "8.4"
 
 # System paths
 web_root: /var/www/html

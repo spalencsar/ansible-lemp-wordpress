@@ -188,7 +188,7 @@ sudo ufw enable
 ### 1. Log Files
 Monitor these log files:
 - Nginx: `/var/log/nginx/access.log` and `/var/log/nginx/error.log`
-- PHP-FPM: `/var/log/php8.3-fpm.log`
+- PHP-FPM: `/var/log/php8.4-fpm.log`
 - MySQL: `/var/log/mysql/error.log`
 - WordPress: `/var/www/html/wp-content/debug.log` (if WP_DEBUG enabled)
 
@@ -233,12 +233,9 @@ ssh -v deployer@your-server.com
 # Check service status
 sudo systemctl status nginx
 sudo systemctl status mysql
-sudo systemctl status php8.3-fpm
+sudo systemctl status php{{ php_version | default('8.4') }}-fpm
 
-# View logs
-sudo journalctl -u nginx
-sudo journalctl -u mysql
-sudo journalctl -u php8.3-fpm
+sudo journalctl -u php{{ php_version | default('8.4') }}-fpm
 ```
 
 ### WordPress Issues

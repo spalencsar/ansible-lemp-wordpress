@@ -19,8 +19,8 @@
 ✅ **Teljes LEMP Stack telepítés**
 - Nginx webszerver termelésre kész optimalizálással
 - MySQL 8.0+ biztonságos beállítással és teljesítmény-hangolással
-- PHP 8.3+ FPM-mel, OPcache-sel és WordPress bővítményekkel
-- Ubuntu/Debian család támogatás (20.04, 22.04, 24.04, Debian 11, 12)
+- PHP 8.4+ FPM-mel, OPcache-sel és WordPress bővítményekkel
+- Ubuntu/Debian család támogatás (20.04, 22.04, 24.04, 25.04, Debian 11, 12, 13, 14)
 
 ### 🛡️ WordPress és Biztonság
 ✅ **WordPress automatizálás és biztonság**

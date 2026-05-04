@@ -5,6 +5,68 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-05-04 - Fail2Ban Security
+
+### Added
+- Fail2Ban integration in playbooks
+- fail2ban jail.local template with SSH, Nginx, WordPress jails
+- WordPress wp-login.php protection filter
+- fail2ban documentation (`docs/fail2ban.md`)
+
+### Security Jails
+- sshd: SSH brute force protection (24h ban)
+- nginx-http-auth: HTTP Auth failures
+- nginx-botsearch: Bot scanners
+- wordpress-login: WordPress login protection
+- recidive: Repeat offenders (1 week ban)
+
+### Changed
+- fail2ban package added to system packages
+- Incremental bans enabled for repeat offenders
+
+## [2.4.0] - 2026-05-04 - Auto-Update Feature
+
+### Added
+- WordPress auto-update script (`scripts/wp-update.sh`)
+- Automated weekly minor updates via cron
+- WP-CLI update automation in playbooks
+- Auto backup before updates
+- Auto-update documentation (`docs/autoupdate.md`)
+
+### Changed
+- Minor updates enabled by default (recommended for production)
+
+### Security
+- Automatic database and file backups before updates
+
+## [2.3.0] - 2026-05-04 - Security & Maintenance Update
+
+### Changed
+- Modern TLS cipher suites (2026 best practices) - AEAD ciphers only
+- TLS session handling improved (ssl_session_tickets off, 1d timeout)
+- HSTS max-age increased to 63072000 (2 years for preload)
+- Docker description updated with PHP 8.4
+
+### Security
+- Removed deprecated ciphers (CBC mode, static RSA)
+- Only TLS 1.2 + 1.3 with forward secrecy
+
+## [2.2.0] - 2026-05-04 - OS Compatibility Update
+
+### Changed
+- Debian 14 "Forky" support (testing/upcoming)
+- Ubuntu 25.04 added to CI/CD test matrix
+- Python 3.12 in GitHub Actions (from 3.11)
+
+## [2.1.0] - 2026-05-04 - Technology Update
+
+### Changed
+- PHP 8.4 support (from 8.3) with property hooks, asymmetric visibility, and performance improvements
+- WordPress 7.0 as default (from 6.x) with Notes feature, Command Palette, and Abilities API
+- Ubuntu 25.04 compatibility (Plucky Puffin interim release)
+- Debian 13 "Trixie" compatibility (current stable)
+- Updated OS compatibility matrix in all documentation
+
 ## [2.0.0] - 2025-06-21 - Production-Ready Release
 
 ### Added

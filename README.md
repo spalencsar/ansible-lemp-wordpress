@@ -4,9 +4,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20|%2022.04%20|%2024.04-orange)](https://ubuntu.com/)
-[![Debian](https://img.shields.io/badge/Debian-11%20|%2012-red)](https://debian.org/)
+[![Debian](https://img.shields.io/badge/Debian-11%20|%2012%20|%2013-red)](https://debian.org/)
 [![Ansible](https://img.shields.io/badge/Ansible-6.0+-red)](https://www.ansible.com/)
-[![WordPress](https://img.shields.io/badge/WordPress-6.8+-blue)](https://wordpress.org/)
+[![WordPress](https://img.shields.io/badge/WordPress-7.0+-blue)](https://wordpress.org/)
 
 ## 🌐 Other Languages
 
@@ -19,7 +19,7 @@
 ✅ **Complete LEMP Stack Installation**
 - Nginx web server with production-ready optimization
 - MySQL 8.0+ with secure setup and performance tuning
-- PHP 8.3+ with FPM, OPcache and WordPress extensions
+- PHP 8.4+ with FPM, OPcache and WordPress extensions
 - Ubuntu/Debian family support (20.04, 22.04, 24.04, Debian 11, 12)
 
 ### 🛡️ WordPress & Security
@@ -297,9 +297,12 @@ ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.y
 
 | OS | Version | Status | Notes |
 |---|---|---|---|
+| Ubuntu | 25.04 | ✅ Supported | Interim release |
 | Ubuntu | 24.04 LTS | ✅ Fully Tested | Recommended |
 | Ubuntu | 22.04 LTS | ✅ Fully Tested | Recommended |
 | Ubuntu | 20.04 LTS | ✅ Supported | Tested |
+| Debian | 14 | 🔶 Testing | Forky (upcoming) |
+| Debian | 13 | ✅ Supported | Current stable |
 | Debian | 12 | ✅ Supported | Compatible |
 | Debian | 11 | ✅ Supported | Compatible |
 

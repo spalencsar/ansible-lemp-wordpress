@@ -53,20 +53,20 @@ RUN apt-get update && apt-get install -y \
     mysql-server \
     mysql-client \
     # PHP and extensions
-    php8.3 \
-    php8.3-fpm \
-    php8.3-cli \
-    php8.3-mysql \
-    php8.3-gd \
-    php8.3-xml \
-    php8.3-mbstring \
-    php8.3-curl \
-    php8.3-zip \
-    php8.3-intl \
-    php8.3-soap \
-    php8.3-xmlrpc \
-    php8.3-opcache \
-    php8.3-redis \
+    php8.4 \
+    php8.4-fpm \
+    php8.4-cli \
+    php8.4-mysql \
+    php8.4-gd \
+    php8.4-xml \
+    php8.4-mbstring \
+    php8.4-curl \
+    php8.4-zip \
+    php8.4-intl \
+    php8.4-soap \
+    php8.4-xmlrpc \
+    php8.4-opcache \
+    php8.4-redis \
     # Security and monitoring
     fail2ban \
     ufw \
@@ -85,7 +85,7 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 RUN systemctl enable ssh \
     && systemctl enable nginx \
     && systemctl enable mysql \
-    && systemctl enable php8.3-fpm
+    && systemctl enable php8.4-fpm
 
 # Create web directory structure
 RUN mkdir -p /var/www/html \
@@ -111,6 +111,6 @@ CMD ["/usr/local/bin/start-services.sh"]
 
 # Labels for metadata
 LABEL org.opencontainers.image.title="LEMP WordPress Testing Environment"
-LABEL org.opencontainers.image.description="Ubuntu 24.04 with Nginx, MySQL, PHP 8.3 for WordPress testing"
+LABEL org.opencontainers.image.description="Ubuntu 24.04 LTS with Nginx, MySQL, PHP 8.4 for WordPress testing"
 LABEL org.opencontainers.image.version="1.0"
 LABEL org.opencontainers.image.licenses="MIT"
