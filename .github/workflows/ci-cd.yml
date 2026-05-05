@@ -42,8 +42,13 @@ jobs:
     
     - name: Validate Ansible syntax
       run: |
+        mkdir -p test-inventory
+        cat > test-inventory/hosts <<EOF
+        [all]
+        localhost ansible_connection=local
+        EOF
         for playbook in playbooks/*.yml; do
-          ansible-playbook --syntax-check "$playbook"
+          ansible-playbook -i test-inventory/hosts --syntax-check "$playbook"
         done
 
   test-ubuntu:
@@ -89,7 +94,7 @@ jobs:
         echo "Testing syntax for all playbooks..."
         for playbook in playbooks/*.yml; do
           echo "Checking $playbook..."
-          ansible-playbook "$playbook" --syntax-check
+          ansible-playbook -i test-inventory/hosts "$playbook" --syntax-check
         done
     
     - name: Test variable loading
