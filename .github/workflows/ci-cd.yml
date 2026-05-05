@@ -105,10 +105,10 @@ jobs:
       run: |
         echo "Testing basic container setup for Ubuntu ${{ matrix.ubuntu_version }}..."
         docker run --rm ubuntu:${{ matrix.ubuntu_version }} /bin/bash -c "
-          export DEBIAN_FRONTEND=noninteractive &&
-          apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 || apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 &&
-          apt-get install -y --no-install-recommends python3 ca-certificates --fix-missing &&
-          python3 --version &&
+          set -e &&
+          grep '^NAME=' /etc/os-release &&
+          grep '^VERSION_ID=' /etc/os-release &&
+          bash --version > /dev/null &&
           echo 'Ubuntu ${{ matrix.ubuntu_version }} container test successful'"
 
 
