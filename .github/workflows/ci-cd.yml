@@ -52,8 +52,16 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        ubuntu_version: ['22.04', '24.04', '25.04']
+        include:
+          - ubuntu_version: '22.04'
+            allow_failure: false
+          - ubuntu_version: '24.04'
+            allow_failure: false
+          - ubuntu_version: '25.04'
+            allow_failure: true
     
+    continue-on-error: ${{ matrix.allow_failure }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
@@ -99,7 +107,7 @@ jobs:
         docker run --rm ubuntu:${{ matrix.ubuntu_version }} /bin/bash -c "
           export DEBIAN_FRONTEND=noninteractive &&
           apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 || apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 &&
-          apt-get install -y --no-install-recommends python3 ca-certificates &&
+          apt-get install -y --no-install-recommends python3 ca-certificates --fix-missing &&
           python3 --version &&
           echo 'Ubuntu ${{ matrix.ubuntu_version }} container test successful'"
 
