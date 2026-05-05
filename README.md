@@ -3,8 +3,8 @@
 🚀 **Production-ready, fully automated LEMP stack (Linux, Nginx, MySQL, PHP) + WordPress deployment using Ansible**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20|%2022.04%20|%2024.04%20|%2025.04-orange)](https://ubuntu.com/)
-[![Debian](https://img.shields.io/badge/Debian-11%20|%2012%20|%2013%20|%2014-red)](https://debian.org/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20|%2024.04%20|%2025.04-orange)](https://ubuntu.com/)
+[![Debian](https://img.shields.io/badge/Debian-12%20|%2013%20|%2014-red)](https://debian.org/)
 [![Ansible](https://img.shields.io/badge/Ansible-6.0+-red)](https://www.ansible.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-7.0+-blue)](https://wordpress.org/)
 
