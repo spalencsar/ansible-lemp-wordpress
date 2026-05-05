@@ -3,8 +3,8 @@
 🚀 **Termelésre kész, teljesen automatizált LEMP stack (Linux, Nginx, MySQL, PHP) + WordPress telepítés Ansible-lel**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20|%2022.04%20|%2024.04-orange)](https://ubuntu.com/)
-[![Debian](https://img.shields.io/badge/Debian-11%20|%2012-red)](https://debian.org/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20|%2024.04%20|%2025.04-orange)](https://ubuntu.com/)
+[![Debian](https://img.shields.io/badge/Debian-12%20|%2013%20|%2014-red)](https://debian.org/)
 [![Ansible](https://img.shields.io/badge/Ansible-6.0+-red)](https://www.ansible.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.8+-blue)](https://wordpress.org/)
 
@@ -20,7 +20,7 @@
 - Nginx webszerver termelésre kész optimalizálással
 - MySQL 8.0+ biztonságos beállítással és teljesítmény-hangolással
 - PHP 8.4+ FPM-mel, OPcache-sel és WordPress bővítményekkel
-- Ubuntu/Debian család támogatás (20.04, 22.04, 24.04, 25.04, Debian 11, 12, 13, 14)
+- Ubuntu/Debian család támogatás (22.04, 24.04, 25.04, Debian 12, 13, 14)
 
 ### 🛡️ WordPress és Biztonság
 ✅ **WordPress automatizálás és biztonság**
@@ -49,7 +49,7 @@
 ### Előfeltételek
 
 - **Ansible** 6.0+ a helyi gépén
-- **Ubuntu/Debian szerver** (20.04+, Debian 11+)
+- **Ubuntu/Debian szerver** (22.04+, Debian 12+)
 - **SSH hozzáférés** a célszerverekhez
 - **sudo jogosultságok** a célszervereken
 
@@ -213,7 +213,7 @@ nginx_optimization_enabled: true
 
 ### Szerver követelmények
 
-- **OS**: Ubuntu 20.04+ vagy Debian 11+
+- **OS**: Ubuntu 22.04+ vagy Debian 12+
 - **RAM**: Minimum 1GB (2GB+ ajánlott Ultimate módhoz)
 - **Tárhely**: Minimum 10GB szabad hely
 - **Hálózat**: SSH hozzáférés + web portok (80/443)
@@ -296,11 +296,12 @@ ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.y
 
 | OS | Verzió | Státusz | Megjegyzések |
 |---|---|---|---|
+| Ubuntu | 25.04 | ✅ Támogatott | Interim Release |
 | Ubuntu | 24.04 LTS | ✅ Teljesen tesztelt | Ajánlott |
 | Ubuntu | 22.04 LTS | ✅ Teljesen tesztelt | Ajánlott |
-| Ubuntu | 20.04 LTS | ✅ Támogatott | Tesztelt |
+| Debian | 14 | 🔶 Tesztelés | Forky (közelgő) |
+| Debian | 13 | ✅ Támogatott | Aktuális stabil |
 | Debian | 12 | ✅ Támogatott | Kompatibilis |
-| Debian | 11 | ✅ Támogatott | Kompatibilis |
 
 ## 📚 Dokumentáció
 

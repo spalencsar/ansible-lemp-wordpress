@@ -3,8 +3,8 @@
 🚀 **Produktionsreife, vollautomatisierte LEMP-Stack (Linux, Nginx, MySQL, PHP) + WordPress-Bereitstellung mit Ansible**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20|%2022.04%20|%2024.04-orange)](https://ubuntu.com/)
-[![Debian](https://img.shields.io/badge/Debian-11%20|%2012-red)](https://debian.org/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20|%2024.04%20|%2025.04-orange)](https://ubuntu.com/)
+[![Debian](https://img.shields.io/badge/Debian-12%20|%2013%20|%2014-red)](https://debian.org/)
 [![Ansible](https://img.shields.io/badge/Ansible-6.0+-red)](https://www.ansible.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.8+-blue)](https://wordpress.org/)
 
@@ -20,7 +20,7 @@
 - Nginx-Webserver mit produktionsreifer Optimierung
 - MySQL 8.0+ mit sicherer Einrichtung und Performance-Tuning
 - PHP 8.4+ mit FPM, OPcache und WordPress-Erweiterungen
-- Ubuntu/Debian-Familie Unterstützung (20.04, 22.04, 24.04, 25.04, Debian 11, 12, 13, 14)
+- Ubuntu/Debian-Familie Unterstützung (22.04, 24.04, 25.04, Debian 12, 13, 14)
 
 ### 🛡️ WordPress & Sicherheit
 ✅ **WordPress-Automatisierung & Sicherheit**
@@ -49,7 +49,7 @@
 ### Voraussetzungen
 
 - **Ansible** 6.0+ auf Ihrem lokalen Rechner
-- **Ubuntu/Debian-Server** (20.04+, Debian 11+)
+- **Ubuntu/Debian-Server** (22.04+, Debian 12+)
 - **SSH-Zugang** zu Ihren Zielservern
 - **sudo-Berechtigung** auf Zielservern
 
@@ -213,7 +213,7 @@ nginx_optimization_enabled: true
 
 ### Server-Anforderungen
 
-- **OS**: Ubuntu 20.04+ oder Debian 11+
+- **OS**: Ubuntu 22.04+ oder Debian 12+
 - **RAM**: Mindestens 1GB (2GB+ empfohlen für Ultimate Modus)
 - **Speicher**: Mindestens 10GB freier Speicherplatz
 - **Netzwerk**: SSH-Zugang + Web-Ports (80/443)
@@ -296,11 +296,12 @@ ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.y
 
 | OS | Version | Status | Hinweise |
 |---|---|---|---|
+| Ubuntu | 25.04 | ✅ Unterstützt | Interim Release |
 | Ubuntu | 24.04 LTS | ✅ Vollständig getestet | Empfohlen |
 | Ubuntu | 22.04 LTS | ✅ Vollständig getestet | Empfohlen |
-| Ubuntu | 20.04 LTS | ✅ Unterstützt | Getestet |
+| Debian | 14 | 🔶 Testing | Forky (bevorstehend) |
+| Debian | 13 | ✅ Unterstützt | Aktuell stabil |
 | Debian | 12 | ✅ Unterstützt | Kompatibel |
-| Debian | 11 | ✅ Unterstützt | Kompatibel |
 
 ## 📚 Dokumentation
 

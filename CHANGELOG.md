@@ -124,7 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines and troubleshooting guide
 - Docker testing environment
 - Multi-environment support (Docker, VMs, bare metal)
-- Ubuntu/Debian support (20.04, 22.04, 24.04, Debian 11, 12)
+- Ubuntu/Debian support (22.04, 24.04, 25.04, Debian 12, 13, 14)
 - 🌍 Multilingual documentation (German, Hungarian translations)
 - 🧪 Simplified and robust CI/CD testing approach  
 - 📝 Professional language navigation in README

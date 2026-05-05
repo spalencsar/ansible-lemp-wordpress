@@ -20,7 +20,7 @@
 - Nginx web server with production-ready optimization
 - MySQL 8.0+ with secure setup and performance tuning
 - PHP 8.4+ with FPM, OPcache and WordPress extensions
-- Ubuntu/Debian family support (20.04, 22.04, 24.04, 25.04, Debian 11, 12, 13, 14)
+- Ubuntu/Debian family support (22.04, 24.04, 25.04, Debian 12, 13, 14)
 
 ### 🛡️ WordPress & Security
 ✅ **WordPress Automation & Security**
@@ -49,7 +49,7 @@
 ### Prerequisites
 
 - **Control Machine**: Ansible 6.0+ installed
-- **Target Server**: Ubuntu 20.04+ or Debian 11+ with SSH access and sudo privileges
+- **Target Server**: Ubuntu 22.04+ or Debian 12+ with SSH access and sudo privileges
 - **Network**: SSH access (port 22) and web access (ports 80/443)
 
 ### 1. Clone Repository
@@ -212,7 +212,7 @@ nginx_optimization_enabled: true
 ```
 ### Server Requirements
 
-- **OS**: Ubuntu 20.04+ or Debian 11+
+- **OS**: Ubuntu 22.04+ or Debian 12+
 - **RAM**: Minimum 1GB (2GB+ recommended for Ultimate mode)
 - **Storage**: Minimum 10GB free space
 - **Network**: SSH access + web ports (80/443)

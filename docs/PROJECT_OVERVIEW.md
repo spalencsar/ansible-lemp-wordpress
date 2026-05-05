@@ -70,8 +70,8 @@ ansible-lemp-wordpress/
 ## 🚀 Supported Environments
 
 ### Operating Systems
-- ✅ **Ubuntu** 20.04, 22.04, 24.04, 25.04 (fully tested)
-- ✅ **Debian** 11, 12, 13, 14 (compatible)
+- ✅ **Ubuntu** 22.04, 24.04, 25.04 (fully tested)
+- ✅ **Debian** 12, 13, 14 (compatible)
 
 ### Deployment Targets
 - ✅ **Docker** containers (development/testing with included setup)
@@ -180,7 +180,7 @@ ansible-playbook -i inventory/production.yml playbooks/lemp-wordpress-ultimate.y
 
 - **Total Files**: ~30 (clean, focused codebase)
 - **Lines of Code**: ~2,000 (Ansible YAML, Jinja2, Documentation)
-- **Supported OS**: Ubuntu 20.04/22.04/24.04/25.04, Debian 11/12/13/14
+- **Supported OS**: Ubuntu 22.04/24.04/25.04, Debian 12/13/14
 - **Deployment Modes**: 2 (Basic + Ultimate)
 - **Templates**: 5 (production-tested)
 - **Documentation Pages**: 9 comprehensive guides (README + 8 in docs/)
