@@ -3,7 +3,7 @@
 # Package names for Ubuntu/Debian systems
 packages:
   - nginx
-  - mysql-server
+  - mariadb-server
   - php8.4-fpm
   - php8.4-mysql
   - php8.4-curl
@@ -19,7 +19,7 @@ packages:
   - fail2ban
 
 # Service names
-mysql_service: mysql
+mysql_service: mariadb
 nginx_service: nginx
 php_fpm_service: php8.4-fpm
 

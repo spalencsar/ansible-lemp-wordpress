@@ -1,8 +1,8 @@
 #!/bin/bash
 # Services für LEMP-Stack starten
 
-# MySQL starten
-service mysql start
+# MySQL/MariaDB starten
+service mysql start || service mariadb start
 
 # PHP-FPM starten  
 service php8.4-fpm start

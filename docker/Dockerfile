@@ -50,8 +50,8 @@ RUN apt-get update && apt-get install -y \
     # Web server
     nginx \
     # Database
-    mysql-server \
-    mysql-client \
+    mariadb-server \
+    mariadb-client \
     # PHP and extensions
     php8.4 \
     php8.4-fpm \
@@ -84,7 +84,7 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 # Configure systemd
 RUN systemctl enable ssh \
     && systemctl enable nginx \
-    && systemctl enable mysql \
+    && systemctl enable mysql mariadb \
     && systemctl enable php8.4-fpm
 
 # Create web directory structure
