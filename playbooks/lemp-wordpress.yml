@@ -122,7 +122,6 @@
       apt:
         name:
           - gnupg
-          - software-properties-common
           - nginx
         state: present
       tags: [packages, nginx]
