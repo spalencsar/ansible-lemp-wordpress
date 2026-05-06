@@ -88,6 +88,12 @@
         cache_valid_time: 3600
       tags: packages
 
+    - name: Add PHP PPA for Ubuntu 24.04+ (needed for PHP 8.4)
+      apt_repository:
+        repo: ppa:ondrej/php
+      when: ansible_distribution == "Ubuntu" and ansible_distribution_version is version("24", ">=")
+      tags: packages
+
     - name: Install all required packages
       package:
         name: "{{ packages }}"
