@@ -66,6 +66,9 @@
       tags: always
 
   vars:
+    # Default PHP version (will be overridden by detection)
+    php_version: "8.4"
+
     # WordPress Configuration
     wordpress_path: "{{ web_root }}"
     wordpress_url: "http://{{ ansible_default_ipv4.address | default('localhost') }}"
@@ -95,6 +98,13 @@
         state: directory
         owner: www-data
         group: www-data
+        mode: '0755'
+      tags: [preflight]
+
+    - name: Create PHP-FPM log directory
+      file:
+        path: "/var/log/php{{ php_version }}-fpm"
+        state: directory
         mode: '0755'
       tags: [preflight]
 
