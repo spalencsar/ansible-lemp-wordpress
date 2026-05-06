@@ -80,7 +80,7 @@
     # These variables come from inventory/production.yml
     # wp_admin_user, wp_admin_password, wp_admin_email, wp_site_title
 
-tasks:
+  tasks:
     # IMPORTANT: Pre-flight checks - create basic directory structure FIRST
     - name: Ensure /var/www exists
       file:

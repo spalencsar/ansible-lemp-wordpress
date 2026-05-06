@@ -1,6 +1,6 @@
 ---
 # Ubuntu/Debian LEMP WordPress installation
-- name: Install LEMP stack with WordPress (Ubuntu/Debian)
+- name: "Install LEMP stack with WordPress (Ubuntu/Debian)"
   hosts: all
   become: yes
 
@@ -83,7 +83,7 @@
     # Auto-Update Configuration
     update_cron_enabled: true
 
-tasks:
+  tasks:
     # IMPORTANT: Pre-flight checks - create basic directory structure FIRST
     - name: Ensure /var/www exists
       file:
