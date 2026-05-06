@@ -84,12 +84,29 @@
     update_cron_enabled: true
 
   tasks:
+    # IMPORTANT: Pre-flight checks - create basic directory structure FIRST
+    - name: Ensure /var/www exists
+      file:
+        path: /var/www
+        state: directory
+        mode: '0755'
+      tags: [preflight]
+
+    - name: Create web root directory
+      file:
+        path: /var/www/html
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+      tags: [preflight]
+
     # Package Installation
-    - name: Update package cache
+    - name: Install nginx first (required for web root)
       apt:
-        update_cache: yes
-        cache_valid_time: 3600
-      tags: packages
+        name: nginx
+        state: present
+      tags: [packages, nginx]
 
     - name: Install gnupg for PPA (required for apt-add-repository)
       package:
