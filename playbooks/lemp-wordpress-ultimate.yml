@@ -88,10 +88,16 @@
         cache_valid_time: 3600
       tags: packages
 
-    - name: Add PHP PPA for Ubuntu 24.04+ (needed for PHP 8.4)
+    - name: Install gnupg for PPA
+      package:
+        name: gnupg
+        state: present
+      tags: packages
+
+    - name: Add PHP PPA for Ubuntu (needed for PHP 8.4)
       apt_repository:
         repo: ppa:ondrej/php
-      when: ansible_distribution == "Ubuntu" and ansible_distribution_version is version("24", ">=")
+      when: ansible_distribution == "Ubuntu"
       tags: packages
 
     - name: Install all required packages

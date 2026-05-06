@@ -15,11 +15,14 @@ RUN mkdir -p /var/run/sshd /var/log/supervisor \
 
 # Install base system packages in a single layer
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+# Core system
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     # Core system
     ca-certificates \
     gnupg \
     lsb-release \
     apt-transport-https \
+    software-properties-common \
     # SSH and system control
     openssh-server \
     sudo \

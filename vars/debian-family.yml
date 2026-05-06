@@ -18,6 +18,8 @@ packages:
   - unzip
   - fail2ban
   - ufw
+  - gnupg
+  - software-properties-common
 
 # Service names
 mysql_service: mariadb
