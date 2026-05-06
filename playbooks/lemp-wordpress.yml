@@ -444,10 +444,8 @@
     - name: Configure WordPress auto-update settings
       command: >
         wp option update auto_update_core_minor enabled
+        --path="{{ wordpress_path }}"
         --allow-root
-      environment:
-        HOME: "{{ wordpress_path }}"
-      ignore_errors: yes
       tags: update
 
     - name: Set up cron job for WordPress updates
