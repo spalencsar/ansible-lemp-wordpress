@@ -20,15 +20,15 @@
     - name: Debug OS information
       debug:
         msg: |
-          OS Family: {{ ansible_os_family }}
-          Distribution: {{ ansible_distribution }}
-          Version: {{ ansible_distribution_version }}
+          OS Family: {{ ansible_facts["os_family"] }}
+          Distribution: {{ ansible_facts["distribution"] }}
+          Version: {{ ansible_facts["distribution_version"] }}
           Supported: Ubuntu/Debian family systems
 
     - name: Verify supported OS
       fail:
-        msg: "This playbook only supports Ubuntu/Debian systems. Detected: {{ ansible_os_family }}"
-      when: ansible_os_family != "Debian"
+        msg: "This playbook only supports Ubuntu/Debian systems. Detected {{ ansible_facts['os_family'] }}"
+      when: ansible_facts["os_family"] != "Debian"
 
     # Environment Detection and Configuration
     - name: Detect if running in Docker
@@ -54,7 +54,7 @@
       vars:
         _auto_wp_url: >-
           {{ 'http://localhost:8080' if (deployment_environment == 'docker')
-             else 'http://' + (ansible_default_ipv4.address | default('localhost')) }}
+             else 'http://' + (ansible_facts["default_ipv4"]["address"] | default('localhost')) }}
       tags: always
 
     - name: Debug deployment configuration
@@ -71,7 +71,7 @@
 
     # WordPress Configuration
     wordpress_path: "{{ web_root }}"
-    wordpress_url: "http://{{ ansible_default_ipv4.address | default('localhost') }}"
+    wordpress_url: "http://{{ ansible_facts['default_ipv4']['address'] | default('localhost') }}"
 
     # Database Configuration (use inventory variables or these defaults)
     default_mysql_root_password: "{{ mysql_root_password | default('secure_root_password_123') }}"

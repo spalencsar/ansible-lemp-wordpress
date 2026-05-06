@@ -49,14 +49,14 @@ define( 'WP_CACHE_KEY_SALT', '{{ domain_name | default('localhost') }}' );
 {% endif %}
 
 // ** Authentifizierungs-Schlüssel und Salts ** //
-define( 'AUTH_KEY',         '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}' );
-define( 'SECURE_AUTH_KEY',  '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}2' );
-define( 'LOGGED_IN_KEY',    '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}3' );
-define( 'NONCE_KEY',        '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}4' );
-define( 'AUTH_SALT',        '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}5' );
-define( 'SECURE_AUTH_SALT', '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}6' );
-define( 'LOGGED_IN_SALT',   '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}7' );
-define( 'NONCE_SALT',       '{{ ansible_date_time.epoch }}put your unique phrase here{{ ansible_hostname }}8' );
+define( 'AUTH_KEY',         '{{ ansible_facts["date_time"]["epoch"] }}put your unique phrase here{{ ansible_facts["hostname"] }}' );
+define( 'SECURE_AUTH_KEY',  '{{ ansible_facts["date_time"]["epoch"] }}put your unique phrase here{{ ansible_facts["hostname"] }}2' );
+define( 'LOGGED_IN_KEY',    '{{ ansible_facts["date_time"]["epoch"] }}put your unique phrase here{{ ansible_facts["hostname"] }}3' );
+define( 'NONCE_KEY',        '{{ ansible_facts["date_time"]["epoch"] }}put your unique phrase here{{ ansible_facts["hostname"] }}4' );
+define( 'AUTH_SALT',        '{{ ansible_facts["date_time"]["epoch"] }}put your unique phrase here{{ ansible_facts["hostname"] }}5' );
+define( 'SECURE_AUTH_SALT', '{{ ansible_facts["date_time"]["epoch"] }}put your unique phrase here{{ ansible_facts["hostname"] }}6' );
+define( 'LOGGED_IN_SALT',   '{{ ansible_facts["date_time"]["epoch"] }}put your unique phrase here{{ ansible_facts["hostname"] }}7' );
+define( 'NONCE_SALT',       '{{ ansible_facts["date_time"]["epoch"] }}put your unique phrase here{{ ansible_facts["hostname"] }}8' );
 
 // ** WordPress Tabellen-Präfix ** //
 $table_prefix = 'wp_';
@@ -71,8 +71,8 @@ define( 'WP_DEBUG_DISPLAY', false );
 define( 'WP_HOME', 'https://{{ domain_name }}' );
 define( 'WP_SITEURL', 'https://{{ domain_name }}' );
 {% else %}
-define( 'WP_HOME', 'http://{{ domain_name }}{% if ansible_port is defined and ansible_port != 22 and ansible_port != 80 %}:{{ ansible_port }}{% endif %}' );
-define( 'WP_SITEURL', 'http://{{ domain_name }}{% if ansible_port is defined and ansible_port != 22 and ansible_port != 80 %}:{{ ansible_port }}{% endif %}' );
+define( 'WP_HOME', 'http://{{ domain_name }}{% if ansible_facts["port"] is defined and ansible_facts["port"] != 22 and ansible_facts["port"] != 80 %}:{{ ansible_facts["port"] }}{% endif %}' );
+define( 'WP_SITEURL', 'http://{{ domain_name }}{% if ansible_facts["port"] is defined and ansible_facts["port"] != 22 and ansible_facts["port"] != 80 %}:{{ ansible_facts["port"] }}{% endif %}' );
 {% endif %}
 
 // ** Weitere Einstellungen ** //
