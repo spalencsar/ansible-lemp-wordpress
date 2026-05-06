@@ -105,28 +105,66 @@ tasks:
         cache_valid_time: 3600
       tags: packages
 
-    - name: Install nginx first (required for web root)
+    - name: Install essential packages
       apt:
-        name: nginx
+        name:
+          - gnupg
+          - software-properties-common
+          - nginx
         state: present
       tags: [packages, nginx]
 
-    - name: Install all required packages
+    - name: Detect available PHP version and set fallback
+      shell: |
+        if apt-cache show php8.4-fpm >/dev/null 2>&1; then
+          echo "8.4"
+        elif apt-cache show php8.3-fpm >/dev/null 2>&1; then
+          echo "8.3"
+        else
+          echo "none"
+        fi
+      register: php_version_detect
+      changed_when: false
+      tags: packages
+
+    - name: Set PHP version fact
+      set_fact:
+        php_version: "{{ php_version_detect.stdout }}"
+      tags: packages
+
+    - name: Install PHP with fallback (try 8.4, fallback to 8.3)
+      apt:
+        name:
+          - "php{{ php_version }}-fpm"
+          - "php{{ php_version }}-mysql"
+          - "php{{ php_version }}-curl"
+          - "php{{ php_version }}-gd"
+          - "php{{ php_version }}-intl"
+          - "php{{ php_version }}-mbstring"
+          - "php{{ php_version }}-soap"
+          - "php{{ php_version }}-xml"
+          - "php{{ php_version }}-xmlrpc"
+          - "php{{ php_version }}-zip"
+          - "php{{ php_version }}-opcache"
+          - "php{{ php_version }}-redis"
+        state: present
+      register: php_install_result
+      tags: packages
+
+    - name: Install remaining packages
       package:
-        name: "{{ packages }}"
+        name: "{{ packages | reject('search', '^php') | list }}"
         state: present
       tags: packages
 
-    - name: Add PHP PPA for Ubuntu (needed for PHP 8.4)
-      apt_repository:
-        repo: ppa:ondrej/php
-      when: ansible_distribution == "Ubuntu"
+    - name: Display PHP version installed
+      debug:
+        msg: "Using PHP version {{ php_version }}"
       tags: packages
 
-    - name: Install all required packages
-      package:
-        name: "{{ packages }}"
-        state: present
+    - name: Set PHP FPM service name dynamically
+      set_fact:
+        php_fpm_service: "php{{ php_version }}-fpm"
       tags: packages
 
     # Service Management

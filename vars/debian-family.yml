@@ -1,39 +1,26 @@
 # Ubuntu/Debian family variables
 ---
-# Package names for Ubuntu/Debian systems
+# Package names for Ubuntu/Debian systems (PHP version is detected and installed dynamically)
 packages:
-  - nginx
   - mariadb-server
-  - php8.4-fpm
-  - php8.4-mysql
-  - php8.4-curl
-  - php8.4-gd
-  - php8.4-intl
-  - php8.4-mbstring
-  - php8.4-soap
-  - php8.4-xml
-  - php8.4-xmlrpc
-  - php8.4-zip
   - python3-pymysql
   - unzip
   - fail2ban
   - ufw
-  - gnupg
-  - software-properties-common
 
 # Service names
 mysql_service: mariadb
 nginx_service: nginx
-php_fpm_service: php8.4-fpm
+php_fpm_service: php{{ php_version }}-fpm
 
 # Package manager
 package_manager: apt
 
-# PHP paths
-php_fpm_config_path: /etc/php/8.4/fpm
-php_cli_config_path: /etc/php/8.4/cli
-php_fpm_pool_path: /etc/php/8.4/fpm/pool.d
-php_fpm_socket: /run/php/php8.4-fpm.sock
+# PHP paths (dynamic based on detected version)
+php_fpm_config_path: /etc/php/{{ php_version }}/fpm
+php_cli_config_path: /etc/php/{{ php_version }}/cli
+php_fpm_pool_path: /etc/php/{{ php_version }}/fpm/pool.d
+php_fpm_socket: /run/php/php{{ php_version }}-fpm.sock
 
 # Nginx paths
 nginx_config_path: /etc/nginx
